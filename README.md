@@ -11,7 +11,7 @@ Premium e-commerce storefront and admin management dashboard built with Next.js 
 ## 🚀 Quick Setup
 1. **Install**: `npm install`
 2. **Environment**: Create `.env.local` with:
-   - `NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api/v1`
+   - `NEXT_PUBLIC_API_URL=http://127.0.0.1:8000`
 3. **Start**: `npm run dev`
 
 ## ✨ Essential Features
