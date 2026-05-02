@@ -35,6 +35,7 @@ export default function AdminLayout({
     }
 
     if (!token) {
+      setIsAuthLoading(false); // Stop loading before redirecting to allow the route change to be seen/triggered
       router.push('/admin/login');
     } else {
       setIsAuthLoading(false);
@@ -78,14 +79,14 @@ export default function AdminLayout({
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] lg:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[40] lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-[70] w-56 bg-white border-r border-gray-100 flex flex-col transition-transform duration-300 transform
+        fixed inset-y-0 left-0 z-[40] w-56 bg-white border-r border-gray-100 flex flex-col transition-transform duration-300 transform
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <div className="p-6 flex items-center justify-between">
@@ -154,7 +155,7 @@ export default function AdminLayout({
 
       {/* Main Content Area */}
       <main className="flex-1 min-h-screen lg:ml-56 transition-all duration-300 w-full max-w-full overflow-x-hidden">
-        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-40">
+        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsSidebarOpen(true)}

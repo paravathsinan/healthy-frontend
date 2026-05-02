@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import axios from 'axios';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
@@ -22,6 +21,20 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+
+// Add interceptor to handle unauthorized responses
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('access_token');
+        window.location.href = '/admin/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const getCategories = async () => {
   const response = await api.get('/categories/');
