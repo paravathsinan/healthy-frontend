@@ -138,6 +138,8 @@ export default function AdminLayout({
         <div className="p-4 border-t border-gray-50 space-y-1">
           <Link 
             href="/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center gap-3.5 px-4 py-2.5 text-[14px] font-bold rounded-xl text-gray-500 hover:text-black hover:bg-gray-50 transition-all w-full"
           >
             <ExternalLink className="h-4 w-4" />
@@ -171,7 +173,7 @@ export default function AdminLayout({
             <button 
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="hidden sm:flex items-center gap-2 text-[10px] font-bold text-gray-500 hover:text-[#006837] transition-all bg-gray-50 px-4 py-2 rounded-full border border-gray-100 disabled:opacity-50"
+              className="hidden sm:flex items-center gap-2 text-[10px] font-medium text-gray-800 hover:text-[#006837] transition-all bg-gray-50 px-4 py-2 rounded-full border border-gray-100"
             >
               <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
               {isRefreshing ? 'REFRESHING...' : 'REFRESH'}
@@ -181,7 +183,7 @@ export default function AdminLayout({
                 <p className="text-[13px] font-bold text-gray-900 leading-tight">Admin</p>
                 <p className="text-[10px] font-medium text-gray-400 hidden md:block">admin@datesandnuts.com</p>
               </div>
-              <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-black text-xs border border-gray-100">
+              <div className="w-8 h-8 rounded-full bg-[#006837] flex items-center justify-center text-white font-black text-xs border border-[#006837]">
                 AD
               </div>
             </div>

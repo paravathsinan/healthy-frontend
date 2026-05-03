@@ -8,19 +8,18 @@ import { Facebook, Instagram, Linkedin, Youtube } from "@/components/shared/Icon
 import { useCartStore } from "@/store/useCartStore";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { 
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose 
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose, SheetDescription 
 } from "@/components/ui/sheet";
 import { motion, AnimatePresence } from "framer-motion";
+import { getCategories } from "@/lib/api";
 
-const NAV_LINKS = [
+
+const STATIC_NAV_LINKS = [
   { name: "Home", href: "/" },
   { 
     name: "Products", 
     href: "/products",
-    categories: [
-      'Dates', 'Nuts', 'Dry Fruits', 'Spices', 'Chocolates',
-      'Beverages', 'Imported', 'Gifting', 'Exclusive'
-    ]
+    isDynamic: true
   },
   { name: "About Us", href: "/about" },
   { name: "Gifting", href: "#" },
@@ -28,12 +27,27 @@ const NAV_LINKS = [
   { name: "Shop Offline", href: "/offline" },
 ];
 
+
 export const Navbar = () => {
+  const [categories, setCategories] = useState<any[]>([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [activeMobileCategory, setActiveMobileCategory] = useState<string | null>(null);
   const [isSticky, setIsSticky] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const isCartOpen = useCartStore((state) => state.isCartOpen);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error("Failed to fetch categories in navbar:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -143,6 +157,9 @@ export const Navbar = () => {
                   </SheetTrigger>
                   <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0 border-none bg-white flex flex-col">
                     <SheetHeader className="p-6 border-b border-gray-100 flex flex-row items-center justify-between space-y-0">
+                      <SheetDescription className="sr-only">
+                        Navigation menu for mobile users.
+                      </SheetDescription>
                       <SheetTitle className="text-2xl font-bold text-gray-900">Menu</SheetTitle>
                       <SheetClose className="rounded-full p-2 hover:bg-gray-100 transition-colors">
                         <span className="sr-only">Close</span>
@@ -154,18 +171,18 @@ export const Navbar = () => {
                     </SheetHeader>
                     <div className="flex-1 overflow-y-auto">
                       <div className="flex flex-col py-2">
-                        {NAV_LINKS.map((link) => (
+                        {STATIC_NAV_LINKS.map((link) => (
                           <div key={link.name}>
                             <div 
                               className="flex items-center justify-between px-6 py-4 border-b border-gray-50 active:bg-gray-50"
-                              onClick={() => link.categories && setActiveMobileCategory(activeMobileCategory === link.name ? null : link.name)}
+                              onClick={() => link.isDynamic && setActiveMobileCategory(activeMobileCategory === link.name ? null : link.name)}
                             >
-                              {link.categories ? (
+                              {link.isDynamic ? (
                                 <Link 
                                   href={link.href} 
                                   className="text-[18px] font-medium text-gray-900"
                                   onClick={(e) => {
-                                    if (link.categories) e.preventDefault();
+                                    if (link.isDynamic) e.preventDefault();
                                   }}
                                 >
                                   {link.name}
@@ -180,25 +197,26 @@ export const Navbar = () => {
                                   </Link>
                                 </SheetClose>
                               )}
-                              {link.categories && (
+                              {link.isDynamic && (
                                 <ChevronDown className={`w-5 h-5 text-gray-900 transition-transform ${activeMobileCategory === link.name ? 'rotate-180' : ''}`} />
                               )}
                             </div>
                             
-                            {link.categories && activeMobileCategory === link.name && (
+                            {link.isDynamic && activeMobileCategory === link.name && (
                               <div className="bg-gray-50 py-2">
-                                {link.categories.map((cat) => (
-                                  <SheetClose asChild key={cat}>
+                                {categories.map((cat) => (
+                                  <SheetClose asChild key={cat.id}>
                                     <Link
-                                      href={`/category/${cat.toLowerCase().replace(' ', '-')}`}
+                                      href={`/category/${cat.slug}`}
                                       className="block px-10 py-3 text-[16px] text-gray-700 active:text-black font-medium"
                                     >
-                                      {cat}
+                                      {cat.name}
                                     </Link>
                                   </SheetClose>
                                 ))}
                               </div>
                             )}
+
                           </div>
                         ))}
                         
@@ -275,29 +293,30 @@ export const Navbar = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-start items-center h-14">
               <ul className="flex items-center gap-10">
-                {NAV_LINKS.map((link) => (
+                {STATIC_NAV_LINKS.map((link) => (
                   <li key={link.name} className="group relative">
                     <Link 
                       href={link.href} 
                       className="text-[15px] text-gray-800 hover:text-black transition-colors flex items-center gap-1 py-4"
                     >
                       {link.name} 
-                      {link.categories && <ChevronDown className={`w-3.5 h-3.5 transition-transform group-hover:rotate-180`} />}
+                      {link.isDynamic && <ChevronDown className={`w-3.5 h-3.5 transition-transform group-hover:rotate-180`} />}
                     </Link>
                     
-                    {link.categories && (
+                    {link.isDynamic && (
                       <div className="absolute top-full left-1/2 -translate-x-1/2 w-40 bg-white shadow-2xl rounded-none py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 border border-gray-100">
-                        {link.categories.map((item) => (
+                        {categories.map((cat) => (
                           <Link
-                            key={item}
-                            href={`/category/${item.toLowerCase().replace(' ', '-')}`}
+                            key={cat.id}
+                            href={`/category/${cat.slug}`}
                             className="block px-4 py-2 text-[13px] text-gray-700 hover:text-black hover:bg-gray-50 transition-all whitespace-nowrap"
                           >
-                            {item}
+                            {cat.name}
                           </Link>
                         ))}
                       </div>
                     )}
+
                   </li>
                 ))}
               </ul>
@@ -319,29 +338,30 @@ export const Navbar = () => {
               <div className="flex justify-between items-center h-16">
                 {/* Left: Navigation Links */}
                 <ul className="flex items-center gap-8">
-                  {NAV_LINKS.map((link) => (
+                  {STATIC_NAV_LINKS.map((link) => (
                     <li key={link.name} className="group relative">
                       <Link 
                         href={link.href} 
                         className="text-[14px] font-medium text-gray-800 hover:text-black transition-colors flex items-center gap-1 py-4"
                       >
                         {link.name} 
-                        {link.categories && <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" />}
+                        {link.isDynamic && <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" />}
                       </Link>
                       
-                      {link.categories && (
+                      {link.isDynamic && (
                         <div className="absolute top-full left-0 w-40 bg-white shadow-2xl rounded-none py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 border border-gray-100">
-                          {link.categories.map((item) => (
+                          {categories.map((cat) => (
                             <Link
-                              key={item}
-                              href={`/category/${item.toLowerCase().replace(' ', '-')}`}
+                              key={cat.id}
+                              href={`/category/${cat.slug}`}
                               className="block px-4 py-2 text-[13px] text-gray-700 hover:text-black hover:bg-gray-50 transition-all whitespace-nowrap"
                             >
-                              {item}
+                              {cat.name}
                             </Link>
                           ))}
                         </div>
                       )}
+
                     </li>
                   ))}
                 </ul>

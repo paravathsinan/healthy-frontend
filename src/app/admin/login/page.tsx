@@ -63,7 +63,7 @@ export default function LoginPage() {
         <div className="text-center">
           <div className="flex justify-center mb-6">
             <div className="relative w-16 h-16 transition-transform hover:scale-110 duration-300">
-              <Image src="/logo/logo.png" alt="Logo" fill className="object-contain" />
+              <Image src="/logo/logo.png" alt="Logo" fill sizes="64px" className="object-contain" />
             </div>
           </div>
           <h2 className="text-3xl font-black text-gray-900 font-heading tracking-tight">Admin Login</h2>

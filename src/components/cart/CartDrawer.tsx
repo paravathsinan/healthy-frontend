@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useCartStore } from "@/store/useCartStore";
 import { 
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose 
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose, SheetDescription 
 } from "@/components/ui/sheet";
 import { Minus, Plus, Trash2, ShoppingBag, X } from "lucide-react";
 import { sendWhatsAppCartOrder } from "@/lib/whatsapp";
@@ -67,6 +67,9 @@ export function CartDrawer({ showOnlyIcon = false }: { showOnlyIcon?: boolean })
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         <SheetHeader className="px-8 py-6 border-b border-gray-100 flex flex-row items-center justify-between flex-shrink-0">
+          <SheetDescription className="sr-only">
+            View and manage the items in your shopping cart.
+          </SheetDescription>
           <SheetTitle className="text-[20px] font-medium text-gray-900">
             Shopping Cart ({items.length})
           </SheetTitle>
