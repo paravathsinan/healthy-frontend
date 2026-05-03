@@ -160,39 +160,46 @@ export default function AdminWhatsAppLogsPage() {
               className="pl-10 pr-4 py-2 rounded-xl border border-gray-200 bg-white text-[13px] font-medium text-gray-900 focus:outline-none focus:border-[#006837] w-full sm:w-64"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
+          <div className="flex items-center gap-3">
+            <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`rounded-full h-9 text-[13px] font-black gap-2 transition-all duration-200 pl-6 pr-6 relative ${
+              className={`relative flex items-center h-[52px] rounded-2xl font-bold transition-all duration-300 ease-in-out border border-[#006837] hover:bg-[#006837]/5 justify-center ${
                 showFilters 
-                  ? "bg-transparent text-[#006837] border-[#006837] hover:bg-[#006837]/5" 
-                  : "bg-[#006837] text-white border-[#006837] hover:bg-[#005a2f]"
-              } ${
-                (statusFilter !== "all" || dateFilter !== "all" || minAmountFilter !== "all" || searchQuery !== "")
-                  ? "pr-10"
-                  : ""
+                  ? "w-[135px] bg-transparent text-[#006837]" 
+                  : "w-[52px] bg-white text-[#006837]"
               }`}
             >
-              <div className="flex items-center gap-2">
-                <Filter className={`h-4 w-4 ${showFilters ? "text-[#006837]" : "text-white"}`} />
-                <span>Filters</span>
-              </div>
+              <Filter className="h-4 w-4 shrink-0 text-[#006837]" />
               
-              {(statusFilter !== "all" || dateFilter !== "all" || minAmountFilter !== "all" || searchQuery !== "") && (
+              <div className={`flex items-center overflow-hidden transition-all duration-300 ease-in-out ${
+                showFilters ? "max-w-[100px] opacity-100 ml-2" : "max-w-0 opacity-0 ml-0"
+              }`}>
+                <span className="text-[#006837] whitespace-nowrap">
+                  Filters
+                </span>
+                
+                {/* Sliding Reset X */}
                 <div 
                   onClick={(e) => {
                     e.stopPropagation();
                     clearFilters();
                   }}
-                  className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-black/10 transition-colors ${
-                    showFilters ? "text-black" : "text-white/80 hover:text-white"
+                  className={`flex items-center justify-center transition-all duration-300 ease-in-out overflow-hidden ${
+                    (statusFilter !== "all" || dateFilter !== "all" || minAmountFilter !== "all" || searchQuery !== "")
+                      ? "w-5 opacity-100 ml-1.5" 
+                      : "w-0 opacity-0 ml-0"
                   }`}
                 >
-                  <X className="h-3 w-3" />
+                  <div className="p-0.5 rounded-full hover:bg-[#006837]/10 transition-colors translate-y-[1px]">
+                    <X className="h-3.5 w-3.5" strokeWidth={3} />
+                  </div>
                 </div>
+              </div>
+              
+              {!showFilters && (statusFilter !== "all" || dateFilter !== "all" || minAmountFilter !== "all" || searchQuery !== "") && (
+                <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-[#006837] border-2 border-white animate-pulse" />
               )}
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -204,74 +211,50 @@ export default function AdminWhatsAppLogsPage() {
         }`}
       >
         <div className="overflow-hidden">
-          <div className="flex flex-wrap items-center gap-8 px-2 py-4 bg-gray-50/30 rounded-2xl border border-gray-100">
-            <div className="flex items-center gap-3">
-              <span className="text-[11px] font-black uppercase tracking-widest text-gray-500">Status</span>
+          <div className="flex flex-wrap items-end gap-6 p-6 bg-gray-50/30 rounded-2xl border border-gray-100">
+            {/* Status Filter */}
+            <div className="flex flex-col gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Status</span>
               <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); setCurrentPage(1); }}>
                 <SelectTrigger className={`w-[180px] h-10 rounded-xl text-[12px] font-bold bg-white focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-200 text-gray-600 ${
                   statusFilter !== "all" 
                     ? "border-[#006837]" 
                     : "border-gray-200"
                 } data-[state=open]:border-[#006837]`}>
-                  <div className="flex items-center gap-2">
-                    <SelectValue placeholder="All Status" />
-                  </div>
+                  <SelectValue placeholder="All Status" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-gray-100 bg-white shadow-xl z-[100] min-w-[200px]">
                   <SelectItem value="all" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">
-                    <div className="flex items-center gap-2">
-                      <ClipboardList className="h-3.5 w-3.5 text-gray-400" />
-                      <span>All Status</span>
-                    </div>
+                    All Status
                   </SelectItem>
                   <SelectItem value="PENDING" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-3.5 w-3.5 text-gray-400" />
-                      <span>Pending</span>
-                    </div>
+                    Pending
                   </SelectItem>
                   <SelectItem value="CONTACTED" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-3.5 w-3.5 text-gray-400" />
-                      <span>Contacted</span>
-                    </div>
+                    Contacted
                   </SelectItem>
                   <SelectItem value="AWAITING_PAY" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="h-3.5 w-3.5 text-gray-400" />
-                      <span>Awaiting Pay</span>
-                    </div>
+                    Awaiting Pay
                   </SelectItem>
                   <SelectItem value="PAID" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-gray-400" />
-                      <span>Paid</span>
-                    </div>
+                    Paid
                   </SelectItem>
                   <SelectItem value="SHIPPED" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">
-                    <div className="flex items-center gap-2">
-                      <Truck className="h-3.5 w-3.5 text-gray-400" />
-                      <span>Shipped</span>
-                    </div>
+                    Shipped
                   </SelectItem>
                   <SelectItem value="COMPLETED" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-3.5 w-3.5 text-gray-400" />
-                      <span>Completed</span>
-                    </div>
+                    Completed
                   </SelectItem>
                   <SelectItem value="CANCELLED" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="h-3.5 w-3.5 text-gray-400" />
-                      <span>Cancelled</span>
-                    </div>
+                    Cancelled
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="flex items-center gap-3">
-              <span className="text-[11px] font-black uppercase tracking-widest text-gray-500">Date</span>
+            {/* Date Filter */}
+            <div className="flex flex-col gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Date</span>
               <Select value={dateFilter} onValueChange={(val) => { setDateFilter(val); setCurrentPage(1); }}>
                 <SelectTrigger className={`w-[160px] h-10 rounded-xl text-[12px] font-bold bg-white focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-200 text-gray-600 ${
                   dateFilter !== "all" 
@@ -280,9 +263,9 @@ export default function AdminWhatsAppLogsPage() {
                 } data-[state=open]:border-[#006837]`}>
                   <SelectValue placeholder="All Time" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl border-gray-100 bg-white shadow-xl z-[100]">
+                <SelectContent className="rounded-xl border-gray-100 bg-white shadow-xl z-[100] min-w-[160px]">
                   <SelectItem value="all" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">All Time</SelectItem>
-                  <SelectItem value="today" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">Today</SelectItem>
+                  <SelectItem value="today" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50 text-emerald-600">Today</SelectItem>
                   <SelectItem value="yesterday" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">Yesterday</SelectItem>
                   <SelectItem value="7days" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">Last 7 Days</SelectItem>
                   <SelectItem value="30days" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">Last 30 Days</SelectItem>
@@ -290,8 +273,9 @@ export default function AdminWhatsAppLogsPage() {
               </Select>
             </div>
 
-            <div className="flex items-center gap-3">
-              <span className="text-[11px] font-black uppercase tracking-widest text-gray-500">Value</span>
+            {/* Value Filter */}
+            <div className="flex flex-col gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Value</span>
               {!isCustomAmount ? (
                 <Select 
                   value={minAmountFilter} 
@@ -376,7 +360,9 @@ export default function AdminWhatsAppLogsPage() {
                   >
                     <TableCell className="text-center py-4">
                       <div className="flex flex-col items-center">
-                        <span className="text-[13px] font-bold text-[#006837] group-hover:underline">ORD-{log.id}</span>
+                        <span className="text-[13px] font-bold text-[#006837] group-hover:underline">
+                          {log.order_number || `ORD-${log.id}`}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-center py-4">

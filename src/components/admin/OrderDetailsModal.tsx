@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Package, MapPin, Phone, User, Calendar, MessageCircle, CheckCircle2, Clock, AlertCircle, Truck, CreditCard } from "lucide-react";
+import { X, Package, MapPin, Phone, User, Calendar, MessageCircle, CheckCircle2, Clock, AlertCircle, Truck, CreditCard, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/api";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ const statuses = [
 
 export function OrderDetailsModal({ order, isOpen, onClose, onUpdate }: OrderDetailsModalProps) {
   const [loading, setLoading] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   if (!order) return null;
 
@@ -65,7 +66,9 @@ export function OrderDetailsModal({ order, isOpen, onClose, onUpdate }: OrderDet
                     {order.status}
                   </span>
                 </div>
-                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">ORD-{order.id} • {new Date(order.created_at).toLocaleString()}</p>
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                  {order.order_number || `ORD-${order.id}`} • {new Date(order.created_at).toLocaleString()}
+                </p>
               </div>
               <button onClick={onClose} className="p-2 hover:bg-white rounded-full transition-colors shadow-sm">
                 <X size={24} className="text-gray-900" />
@@ -156,24 +159,53 @@ export function OrderDetailsModal({ order, isOpen, onClose, onUpdate }: OrderDet
               </div>
             </div>
 
-            {/* Footer / Total */}
+            {/* Footer / Actions */}
             <div className="p-5 md:p-8 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-[#006837] shadow-sm shrink-0">
-                  <MessageCircle size={24} className="md:size-[28px]" />
-                </div>
+              <div className="flex items-center gap-4 flex-1">
                 <div>
                   <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Order Amount</p>
                   <p className="text-2xl md:text-3xl font-black text-gray-900 font-heading tracking-tighter">₹{order.total_amount}</p>
                 </div>
               </div>
-              <button 
-                onClick={() => window.open(`https://wa.me/${order.customer_phone.replace(/[^0-9]/g, '')}`, '_blank')}
-                className="bg-[#006837] text-white px-6 md:px-10 py-3.5 md:py-4 rounded-2xl md:rounded-full text-xs md:text-sm font-bold hover:bg-black transition-all shadow-lg shadow-[#006837]/20 flex items-center justify-center gap-3 active:scale-95"
-              >
-                <Phone size={16} className="md:size-[18px]" />
-                Follow up via WhatsApp
-              </button>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button 
+                  onClick={async () => {
+                    if (confirmDelete) {
+                      setLoading(true);
+                      try {
+                        await api.delete(`/orders/${order.id}/`);
+                        toast.success("Order deleted successfully");
+                        onClose();
+                        if (onUpdate) onUpdate();
+                      } catch (error) {
+                        toast.error("Failed to delete order");
+                      } finally {
+                        setLoading(false);
+                      }
+                    } else {
+                      setConfirmDelete(true);
+                      setTimeout(() => setConfirmDelete(false), 3000); // Reset after 3s
+                    }
+                  }}
+                  className={`px-6 py-3.5 rounded-2xl md:rounded-full text-xs font-bold transition-all flex items-center justify-center gap-3 border ${
+                    confirmDelete 
+                      ? 'bg-red-600 text-white border-red-600' 
+                      : 'bg-white text-red-500 border-red-100 hover:bg-red-50'
+                  }`}
+                >
+                  <Trash2 size={16} />
+                  {confirmDelete ? 'Confirm Delete?' : 'Delete'}
+                </button>
+
+                <button 
+                  onClick={() => window.open(`https://wa.me/${order.customer_phone.replace(/[^0-9]/g, '')}`, '_blank')}
+                  className="bg-[#006837] text-white px-6 md:px-10 py-3.5 md:py-4 rounded-2xl md:rounded-full text-xs md:text-sm font-bold hover:bg-black transition-all shadow-lg shadow-[#006837]/20 flex items-center justify-center gap-3 active:scale-95"
+                >
+                  <Phone size={16} className="md:size-[18px]" />
+                  WhatsApp
+                </button>
+              </div>
             </div>
 
           </motion.div>

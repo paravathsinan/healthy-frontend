@@ -17,6 +17,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState(product.variants?.[0]?.weight || '1000 G');
   const [isAdding, setIsAdding] = useState(false);
+  const [isBuyingNow, setIsBuyingNow] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addItem } = useCartStore();
 
@@ -37,6 +38,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
   const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + productImages.length) % productImages.length);
 
   const handleAddToCart = async () => {
+    if (isAdding || isBuyingNow) return;
     setIsAdding(true);
     await new Promise(resolve => setTimeout(resolve, 600));
     addItem({
@@ -50,6 +52,24 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
       image: productImages[0]
     });
     setIsAdding(false);
+    onClose();
+  };
+
+  const handleBuyNow = async () => {
+    if (isAdding || isBuyingNow) return;
+    setIsBuyingNow(true);
+    await new Promise(resolve => setTimeout(resolve, 800));
+    addItem({
+      id: `${product.id}-${selectedSize}`,
+      productId: product.id,
+      variantId: currentVariant.id,
+      name: product.name,
+      price: unitPrice,
+      weight: selectedSize,
+      quantity: quantity,
+      image: productImages[0]
+    });
+    setIsBuyingNow(false);
     onClose();
   };
 
@@ -228,14 +248,16 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
                       <Button 
                         onClick={handleAddToCart}
                         loading={isAdding}
+                        disabled={isBuyingNow}
                         className="flex-1 bg-black text-white py-3.5 md:py-4 px-6 md:px-8 rounded-full font-bold hover:bg-gray-800 transition-all text-[14px] md:text-[15px] h-auto"
                       >
                         Add to cart
                       </Button>
                     </div>
                     <Button 
-                      onClick={handleAddToCart}
-                      loading={isAdding}
+                      onClick={handleBuyNow}
+                      loading={isBuyingNow}
+                      disabled={isAdding}
                       className="w-full border border-gray-900 py-3.5 md:py-4 rounded-full font-bold text-gray-900 hover:bg-gray-50 transition-all text-[14px] md:text-[15px] h-auto bg-transparent"
                     >
                       Buy it now

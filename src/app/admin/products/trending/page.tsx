@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { getProducts } from "@/lib/api";
+import { getProducts, getCategories } from "@/lib/api";
 import AdminProductTable from "@/components/admin/ProductTable";
 import { Search, Plus, Package, Loader2, Sparkles, Filter } from "lucide-react";
 import { ProductModal } from "@/components/admin/ProductModal";
@@ -14,11 +14,10 @@ function TrendingProductsContent() {
   const categorySlug = searchParams.get("category");
   
   const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
-
 
   const fetchTrendingProducts = async () => {
     setLoading(true);
@@ -27,6 +26,9 @@ function TrendingProductsContent() {
       if (categorySlug) params.category__slug = categorySlug;
       const data = await getProducts(params);
       setProducts(data);
+      
+      const cats = await getCategories();
+      setCategories(cats);
     } catch (error) {
       console.error("Failed to fetch trending products", error);
     } finally {
@@ -106,7 +108,7 @@ function TrendingProductsContent() {
               </div>
             </div>
           ) : filteredProducts.length > 0 ? (
-            <AdminProductTable products={filteredProducts} onSuccess={fetchTrendingProducts} />
+            <AdminProductTable products={filteredProducts} categories={categories} onSuccess={fetchTrendingProducts} />
 
           ) : (
             <div className="flex flex-col items-center justify-center h-[500px] text-center space-y-4">
@@ -126,6 +128,7 @@ function TrendingProductsContent() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSuccess={fetchTrendingProducts}
+          categories={categories}
           defaultFeatured={true}
         />
 

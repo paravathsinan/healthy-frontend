@@ -18,9 +18,10 @@ export default function DynamicCategoryProductsPage({ params }: { params: Promis
   
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const [category, setCategory] = useState<any | null>(null);
+   const [isModalOpen, setIsModalOpen] = useState(false);
+   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+   const [category, setCategory] = useState<any | null>(null);
+   const [categories, setCategories] = useState<any[]>([]);
 
   const fetchCategoryData = async () => {
     setLoading(true);
@@ -30,8 +31,10 @@ export default function DynamicCategoryProductsPage({ params }: { params: Promis
       setProducts(productData);
       
       // 2. Fetch category details
-      const categories = await getCategories();
-      const currentCat = categories.find((c: any) => c.slug === slug);
+      const categoriesData = await getCategories();
+      setCategories(categoriesData);
+      
+      const currentCat = categoriesData.find((c: any) => c.slug === slug);
       if (currentCat) {
         setCategory(currentCat);
       } else {
@@ -144,7 +147,7 @@ export default function DynamicCategoryProductsPage({ params }: { params: Promis
               </div>
             </div>
           ) : products.length > 0 ? (
-            <AdminProductTable products={products} onSuccess={fetchCategoryData} />
+            <AdminProductTable products={products} categories={categories} onSuccess={fetchCategoryData} />
           ) : (
             <div className="flex flex-col items-center justify-center h-[500px] text-center space-y-4">
               <div className="p-6 rounded-full bg-gray-50 text-gray-200">
@@ -168,6 +171,7 @@ export default function DynamicCategoryProductsPage({ params }: { params: Promis
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSuccess={fetchCategoryData}
+          categories={categories}
           defaultCategoryId={category?.id?.toString()}
         />
 

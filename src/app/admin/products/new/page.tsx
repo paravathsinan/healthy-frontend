@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { getProducts } from "@/lib/api";
+import { getProducts, getCategories } from "@/lib/api";
 import AdminProductTable from "@/components/admin/ProductTable";
 import { Search, Plus, Package, Loader2, Sparkles, Filter } from "lucide-react";
 import { ProductModal } from "@/components/admin/ProductModal";
@@ -16,11 +16,10 @@ function NewArrivalProductsContent() {
   const categorySlug = searchParams.get("category");
   
   const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
-
 
   const fetchNewArrivals = async () => {
     setLoading(true);
@@ -29,6 +28,9 @@ function NewArrivalProductsContent() {
       if (categorySlug) params.category__slug = categorySlug;
       const data = await getProducts(params);
       setProducts(data);
+      
+      const cats = await getCategories();
+      setCategories(cats);
     } catch (error) {
       console.error("Failed to fetch new arrivals", error);
     } finally {
@@ -108,7 +110,7 @@ function NewArrivalProductsContent() {
               </div>
             </div>
           ) : filteredProducts.length > 0 ? (
-            <AdminProductTable products={filteredProducts} onSuccess={fetchNewArrivals} />
+            <AdminProductTable products={filteredProducts} categories={categories} onSuccess={fetchNewArrivals} />
 
           ) : (
             <div className="flex flex-col items-center justify-center h-[500px] text-center space-y-4">
@@ -128,6 +130,7 @@ function NewArrivalProductsContent() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSuccess={fetchNewArrivals}
+          categories={categories}
           defaultNewArrival={true}
         />
 

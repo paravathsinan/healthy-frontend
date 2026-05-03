@@ -18,6 +18,7 @@ function ChocolateProductsContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [category, setCategory] = useState<any | null>(null);
+  const [categories, setCategories] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
 
@@ -29,8 +30,9 @@ function ChocolateProductsContent() {
       setProducts(data);
       
       // Also get category ID for the modal
-      const categories = await getCategories();
-      const chocolateCat = categories.find((c: any) => c.slug === 'chocolates');
+      const categoriesData = await getCategories();
+      setCategories(categoriesData);
+      const chocolateCat = categoriesData.find((c: any) => c.slug === 'chocolates');
       if (chocolateCat) {
         setCategory(chocolateCat);
       }
@@ -121,7 +123,7 @@ function ChocolateProductsContent() {
             <Loader2 className="h-8 w-8 text-[#006837] animate-spin" />
           </div>
         ) : filteredProducts.length > 0 ? (
-          <AdminProductTable products={filteredProducts} onSuccess={fetchChocolateProducts} />
+          <AdminProductTable products={filteredProducts} categories={categories} onSuccess={fetchChocolateProducts} />
 
         ) : (
           <div className="flex flex-col items-center justify-center h-[500px] text-center space-y-4">
@@ -141,6 +143,7 @@ function ChocolateProductsContent() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={fetchChocolateProducts}
+        categories={categories}
         defaultCategoryId={category?.id?.toString()}
       />
 
