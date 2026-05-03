@@ -15,7 +15,11 @@ interface QuickViewModalProps {
 
 export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps) => {
   const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState(product.variants?.[0]?.weight || '1000 G');
+  
+  // Sort variants by price (smallest to largest)
+  const sortedVariants = [...(product.variants || [])].sort((a, b) => a.price - b.price);
+  
+  const [selectedSize, setSelectedSize] = useState(sortedVariants[0]?.weight || '250 G');
   const [isAdding, setIsAdding] = useState(false);
   const [isBuyingNow, setIsBuyingNow] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -193,7 +197,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
               <div className="space-y-3 md:space-y-4">
                 <p className="text-[14px] md:text-[15px] text-gray-900 font-medium">Available in</p>
                 <div className="flex flex-wrap gap-2 md:gap-3">
-                  {(product.variants?.length > 0 ? product.variants.map((v: any) => v.weight) : ['250 G', '500 G', '1000 G']).map((size: string) => (
+                  {(sortedVariants.length > 0 ? sortedVariants.map((v: any) => v.weight) : ['250 G', '500 G', '1000 G']).map((size: string) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}

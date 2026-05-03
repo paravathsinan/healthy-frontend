@@ -57,7 +57,7 @@ export default function HeroCarousel() {
   }, [paginate, slides.length]);
 
   if (loading) {
-    return <div className="w-full h-[250px] md:h-[400px] bg-gray-50 animate-pulse rounded-2xl" />;
+    return <div className="w-full h-[550px] md:h-[650px] bg-gray-50 animate-pulse rounded-2xl" />;
   }
 
   if (slides.length === 0) return null;
@@ -65,7 +65,7 @@ export default function HeroCarousel() {
   return (
     <div className="space-y-2">
       {/* Shrunk Carousel Section */}
-      <section className="relative w-full h-[250px] md:h-[400px] overflow-hidden bg-background group shadow-xl shadow-black/5">
+      <section className="relative w-full h-[550px] md:h-[650px] overflow-hidden bg-background group shadow-xl shadow-black/5">
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
             key={page}

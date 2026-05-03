@@ -14,8 +14,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Dates & Nuts | Premium Dry Fruits Store",
-  description: "High-quality, hand-picked dates and nuts delivered to your doorstep.",
+  title: "healthydates.in | Premium Dry Fruits Store",
+  description: "Shop premium quality dates, nuts, and dry fruits online at healthydates.in. High-quality, hand-picked goodness delivered to your doorstep.",
   icons: {
     icon: [
       { url: "/favicon.png", type: "image/png" },
@@ -25,6 +25,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { BfcacheHandler } from "@/components/shared/BfcacheHandler";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,6 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${plusJakartaSans.variable} ${outfit.variable} font-sans antialiased`}>
+        <BfcacheHandler />
         {children}
         <Toaster position="top-center" richColors />
       </body>

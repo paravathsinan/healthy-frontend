@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingCart, User, Heart, Menu, Truck, ChevronDown } from "lucide-react";
+import { Search, ShoppingCart, Heart, Menu, Truck, ChevronDown } from "lucide-react";
 import { Facebook, Instagram, Linkedin, Youtube } from "@/components/shared/Icons";
 import { useCartStore } from "@/store/useCartStore";
 import { CartDrawer } from "@/components/cart/CartDrawer";
@@ -69,15 +69,7 @@ export const Navbar = () => {
 
   return (
     <>
-      {/* Background Overlay when Search is focused */}
-      <div
-        className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-[45] transition-opacity duration-300 pointer-events-none ${isSearchFocused ? "opacity-100" : "opacity-0"
-          }`}
-      />
-
-      <header className={`relative bg-white transition-all duration-300 ${
-        isSearchFocused ? "z-[50]" : "z-40"
-      }`}>
+      <header className="relative bg-white z-40">
         {/* Announcement Bar */}
         <div className="bg-[#006837] text-white py-2.5 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto flex justify-between items-center text-[13px] tracking-wide">
@@ -106,7 +98,7 @@ export const Navbar = () => {
                 <div className="relative w-20 h-20">
                   <Image
                     src="/logo/logo.png"
-                    alt="Healthy Dates Logo"
+                    alt="Healthy Dates & Nuts Logo"
                     fill
                     sizes="80px"
                     className="object-contain"
@@ -118,26 +110,26 @@ export const Navbar = () => {
               <div className="flex-1 flex items-center justify-end gap-4">
                 {/* Search Bar */}
                 <div className="flex-1 max-w-xl">
-                  <div className="relative group z-20 w-full">
+                  <div className="relative group w-full">
                     <input
                       type="text"
                       placeholder="Search for..."
                       onFocus={() => setIsSearchFocused(true)}
                       onBlur={() => setIsSearchFocused(false)}
-                      className="w-full bg-[#F9F9F9] border border-gray-300 rounded-full py-3.5 pl-14 pr-6 focus:ring-2 focus:ring-black/5 focus:bg-white focus:border-black hover:border-black transition-all text-base outline-none text-gray-900 placeholder:text-gray-500 shadow-sm"
+                      className="w-full bg-[#F9F9F9] border border-gray-300 rounded-full py-3.5 pl-14 pr-6 focus:ring-4 focus:ring-[#006837]/5 focus:bg-white focus:border-[#006837] hover:border-black transition-all text-base outline-none text-gray-900 placeholder:text-gray-500 shadow-sm"
                     />
-                    <Search className={`absolute left-5 top-4 h-6 w-6 transition-colors duration-300 ${isSearchFocused ? "text-black" : "text-gray-400 group-hover:text-black"
+                    <Search className={`absolute left-5 top-4 h-6 w-6 transition-colors duration-300 ${isSearchFocused ? "text-[#006837]" : "text-gray-400 group-hover:text-black"
                       }`} />
                   </div>
                 </div>
 
-                {/* Account Button */}
+                {/* Track Order Button */}
                 <Link
-                  href="/account"
+                  href="/track-order"
                   className="flex items-center gap-3 px-8 py-3.5 border border-gray-300 rounded-full text-base text-gray-900 hover:border-black hover:bg-gray-50 transition-all shrink-0"
                 >
-                  <User className="h-5 w-5" />
-                  <span>Account</span>
+                  <Truck className="h-5 w-5" />
+                  <span>Track Order</span>
                 </Link>
 
                 {/* Cart Drawer */}
@@ -222,9 +214,9 @@ export const Navbar = () => {
                         
                         <div className="p-6 space-y-4">
                           <SheetClose asChild>
-                            <Link href="/account" className="flex items-center gap-3 text-gray-900 font-medium py-2">
-                              <User className="h-5 w-5" />
-                              <span className="text-[18px]">My Account</span>
+                            <Link href="/track-order" className="flex items-center gap-3 text-gray-900 font-medium py-2">
+                              <Truck className="h-5 w-5" />
+                              <span className="text-[18px]">Track Order</span>
                             </Link>
                           </SheetClose>
                           <SheetClose asChild>
@@ -273,15 +265,15 @@ export const Navbar = () => {
               </div>
 
               {/* Mobile Search Bar */}
-              <div className="relative group z-20 w-full">
+              <div className="relative group w-full">
                 <input
                   type="text"
                   placeholder="Search for..."
                   onFocus={() => setIsSearchFocused(true)}
                   onBlur={() => setIsSearchFocused(false)}
-                  className="w-full bg-[#F9F9F9] border border-gray-300 rounded-full py-2.5 pl-12 pr-6 focus:ring-2 focus:ring-black/5 focus:bg-white focus:border-black hover:border-black transition-all text-sm outline-none text-gray-900 placeholder:text-gray-500 shadow-sm"
+                  className="w-full bg-[#F9F9F9] border border-gray-300 rounded-full py-2.5 pl-12 pr-6 focus:ring-4 focus:ring-[#006837]/5 focus:bg-white focus:border-[#006837] hover:border-black transition-all text-sm outline-none text-gray-900 placeholder:text-gray-500 shadow-sm"
                 />
-                <Search className={`absolute left-4 top-2.5 h-5 w-5 transition-colors duration-300 ${isSearchFocused ? "text-black" : "text-gray-400 group-hover:text-black"
+                <Search className={`absolute left-4 top-2.5 h-5 w-5 transition-colors duration-300 ${isSearchFocused ? "text-[#006837]" : "text-gray-400 group-hover:text-black"
                   }`} />
               </div>
             </div>
@@ -324,6 +316,7 @@ export const Navbar = () => {
           </div>
         </div>
       </header>
+
       {/* Sticky Navigation Bar */}
       <AnimatePresence>
         {isSticky && (

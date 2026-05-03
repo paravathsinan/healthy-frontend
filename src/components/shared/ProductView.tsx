@@ -14,7 +14,9 @@ interface ProductViewProps {
 }
 
 export default function ProductView({ product }: ProductViewProps) {
-  const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
+  // Sort variants by price (smallest to largest)
+  const sortedVariants = [...product.variants].sort((a, b) => a.price - b.price);
+  const [selectedVariant, setSelectedVariant] = useState(sortedVariants[0]);
   const [isAdding, setIsAdding] = useState(false);
   const [isOrdering, setIsOrdering] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
@@ -85,7 +87,7 @@ export default function ProductView({ product }: ProductViewProps) {
           <div className="bg-stone-50 p-6 rounded-3xl border border-stone-100 mb-8">
             <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4">Select Weight</p>
             <div className="flex flex-wrap gap-3 mb-6">
-              {product.variants.map((v: any) => (
+              {sortedVariants.map((v: any) => (
                 <button
                   key={v.id}
                   onClick={() => setSelectedVariant(v)}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Home, Grid, Heart, User, PackageSearch } from "lucide-react";
+import { Home, Grid, Heart, Truck, PackageSearch } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 export const BottomNav = () => {
@@ -11,7 +11,7 @@ export const BottomNav = () => {
     { href: "/", label: "Home", icon: Home },
     { href: "/products", label: "Shop", icon: PackageSearch },
     { href: "/category/exclusive", label: "Excl", icon: Heart },
-    { href: "/account", label: "Me", icon: User },
+    { href: "/track-order", label: "Track", icon: Truck },
   ];
 
   return (

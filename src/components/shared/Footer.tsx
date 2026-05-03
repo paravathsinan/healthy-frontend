@@ -10,15 +10,20 @@ export const Footer = () => {
           {/* Brand Column */}
           <div className="space-y-6">
             <div>
-              <h2 className="text-[20px] font-bold tracking-tight mb-4 uppercase">HEALTHY</h2>
+              <h2 className="text-[20px] font-bold tracking-tight mb-4 uppercase">HEALTHYDATES.IN</h2>
               <div className="space-y-3 text-[14px] text-gray-800">
-                <p className="hover:underline cursor-pointer transition-all">shoponline@healthydatesandnuts.com</p>
-                <p>+91 958 700 7777</p>
-                <div className="pt-2">
+                <a href="mailto:shoponline@healthydates.in" className="block hover:underline transition-all">shoponline@healthydates.in</a>
+                <a href="tel:+918157858977" className="block hover:underline transition-all">+91 8157858977</a>
+                <a 
+                  href="https://www.google.com/maps/search/?api=1&query=34W9%2BRVR%2C%2BMuttipalam%2BUpper%2C%2BMuttippalam%2BManjeri%2BKerala%2B676121" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block pt-2 hover:underline transition-all group"
+                >
                   <p>34W9+RVR, Muttipalam Upper,</p>
                   <p>Muttippalam, Manjeri,</p>
                   <p>Kerala 676121</p>
-                </div>
+                </a>
               </div>
             </div>
             <div className="flex gap-6">
@@ -59,9 +64,8 @@ export const Footer = () => {
               <li><Link href="/recipes" className="hover:underline decoration-1 underline-offset-4">Recipes</Link></li>
               <li><Link href="/contact" className="hover:underline decoration-1 underline-offset-4">Contact Us</Link></li>
               <li><Link href="/blog" className="hover:underline decoration-1 underline-offset-4">Blog</Link></li>
-              <li><Link href="/account" className="hover:underline decoration-1 underline-offset-4">My Account</Link></li>
+              <li><Link href="/track-order" className="hover:underline decoration-1 underline-offset-4">Track Order</Link></li>
               <li><Link href="/corporate" className="hover:underline decoration-1 underline-offset-4">Corporate orders</Link></li>
-              <li><Link href="/track" className="hover:underline decoration-1 underline-offset-4">Track Order</Link></li>
               <li><Link href="/wholesale" className="hover:underline decoration-1 underline-offset-4">Wholesale Enquiry</Link></li>
             </ul>
           </div>
@@ -81,7 +85,7 @@ export const Footer = () => {
 
         <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 text-[14px] text-gray-800">
           <p>
-            Copyright © 2026 <Link href="/" className="hover:underline decoration-1 underline-offset-4">healthydatesandnuts.</Link>
+            Copyright © 2026 <Link href="/" className="hover:underline decoration-1 underline-offset-4">healthydates.in</Link>
           </p>
         </div>
       </div>
