@@ -62,7 +62,6 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
   const handleBuyNow = async () => {
     if (isAdding || isBuyingNow) return;
     setIsBuyingNow(true);
-    await new Promise(resolve => setTimeout(resolve, 800));
     addItem({
       id: `${product.id}-${selectedSize}`,
       productId: product.id,
@@ -72,7 +71,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
       weight: selectedSize,
       quantity: quantity,
       image: productImages[0]
-    });
+    }, true);
     setIsBuyingNow(false);
     onClose();
   };
@@ -93,7 +92,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
         {/* Backdrop */}
         <motion.div 
           initial={{ opacity: 0 }}

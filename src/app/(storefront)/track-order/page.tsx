@@ -36,12 +36,23 @@ function TrackOrderContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const resultsRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLDivElement>(null);
   
   const [orderId, setOrderId] = useState(searchParams.get("id") || "");
   const [phone, setPhone] = useState(searchParams.get("phone") || "");
   const [loading, setLoading] = useState(false);
   const [order, setOrder] = useState<any>(null);
   const [error, setError] = useState("");
+
+  // Scroll to title on mount (Desktop Only)
+  useEffect(() => {
+    if (window.innerWidth < 768) return;
+    
+    const timer = setTimeout(() => {
+      titleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleTrack = async (e?: React.FormEvent, initialOrderId?: string, initialPhone?: string) => {
     if (e) e.preventDefault();
@@ -135,7 +146,7 @@ function TrackOrderContent() {
         </Link>
 
         {/* Header */}
-        <div className="text-center space-y-3 mb-12">
+        <div className="text-center space-y-3 mb-12 scroll-mt-12">
           <h1 className="text-4xl font-black text-gray-900 tracking-tight font-heading italic">
             Track Your Order
           </h1>
@@ -145,7 +156,7 @@ function TrackOrderContent() {
         </div>
 
         {/* Search Box */}
-        <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-black/5 border border-gray-100 mb-12">
+        <div ref={titleRef} className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-black/5 border border-gray-100 mb-12">
           <form onSubmit={handleTrack} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -159,7 +170,7 @@ function TrackOrderContent() {
                     value={orderId}
                     onChange={(e) => setOrderId(e.target.value.toUpperCase())}
                     placeholder="e.g. ORD-2 or HDN-..."
-                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 pl-14 pr-6 focus:ring-4 focus:ring-[#006837]/5 focus:bg-white focus:border-[#006837] transition-all text-gray-900 font-bold placeholder:font-normal placeholder:text-gray-400"
+                    className="w-full bg-gray-50 border border-[#006837]/30 rounded-2xl py-4 pl-14 pr-6 focus:ring-4 focus:ring-[#006837]/5 focus:bg-white focus:border-[#006837] transition-all text-gray-900 font-bold placeholder:font-normal placeholder:text-gray-400"
                   />
                 </div>
               </div>
@@ -174,7 +185,7 @@ function TrackOrderContent() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Enter phone number"
-                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 pl-14 pr-6 focus:ring-4 focus:ring-[#006837]/5 focus:bg-white focus:border-[#006837] transition-all text-gray-900 font-bold placeholder:font-normal placeholder:text-gray-400"
+                    className="w-full bg-gray-50 border border-[#006837]/30 rounded-2xl py-4 pl-14 pr-6 focus:ring-4 focus:ring-[#006837]/5 focus:bg-white focus:border-[#006837] transition-all text-gray-900 font-bold placeholder:font-normal placeholder:text-gray-400"
                   />
                 </div>
               </div>
@@ -424,15 +435,6 @@ function TrackOrderContent() {
           )}
         </AnimatePresence>
 
-        {/* Info Box */}
-        {!order && (
-          <div className="mt-24 text-center space-y-6">
-            <div className="inline-flex items-center gap-3 px-6 py-2 bg-white rounded-full border border-gray-100 text-[13px] font-bold text-gray-500 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              Delivery support active 24/7
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

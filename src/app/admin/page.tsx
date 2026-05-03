@@ -61,7 +61,7 @@ export default function AdminDashboard() {
     { label: "Total Products", value: statsData?.product_count ?? products.length, icon: Package, color: "text-[#006837]", bg: "bg-[#006837]/10" },
     { label: "Categories", value: statsData?.category_count ?? categories.length, icon: List, color: "text-blue-600", bg: "bg-blue-50" },
     { label: "WhatsApp Clicks", value: statsData?.whatsapp_clicks ?? 0, icon: MessageCircle, color: "text-green-600", bg: "bg-green-50" },
-    { label: "Active Visitors", value: statsData?.active_visitors ?? 1, icon: Users, color: "text-purple-600", bg: "bg-purple-50" },
+    { label: "Total Visitors", value: statsData?.total_visitors ?? 0, icon: Users, color: "text-purple-600", bg: "bg-purple-50" },
   ];
 
   if (!mounted) return <div className="min-h-screen bg-gray-50/50" />;

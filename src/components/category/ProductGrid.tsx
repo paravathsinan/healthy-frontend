@@ -28,8 +28,6 @@ export const ProductGrid = ({ products, columns = 3, loading = false }: ProductG
 
   const handleBuyNow = async (product: any) => {
     setLoadingId(product.id);
-    // Simulate a brief loading state for better UX
-    await new Promise(resolve => setTimeout(resolve, 600));
     addItem({
       id: `${product.id}-default`,
       name: product.name,
@@ -37,7 +35,7 @@ export const ProductGrid = ({ products, columns = 3, loading = false }: ProductG
       weight: 'Standard',
       quantity: 1,
       image: product.primary_image || '/images/placeholder.png'
-    });
+    }, true);
     setLoadingId(null);
   };
 

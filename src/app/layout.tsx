@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Outfit } from "next/font/google";
 import "./globals.css";
@@ -26,6 +27,7 @@ export const metadata: Metadata = {
 };
 
 import { BfcacheHandler } from "@/components/shared/BfcacheHandler";
+import ScrollToTop from "@/components/shared/ScrollToTop";
 
 export default function RootLayout({
   children,
@@ -36,6 +38,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${plusJakartaSans.variable} ${outfit.variable} font-sans antialiased`}>
         <BfcacheHandler />
+        <Suspense fallback={null}>
+          <ScrollToTop />
+        </Suspense>
         {children}
         <Toaster position="top-center" richColors />
       </body>

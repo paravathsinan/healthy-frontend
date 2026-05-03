@@ -158,6 +158,14 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
         payload.base_discount_price = parseFloat(formData.base_discount_price.toString());
       }
 
+      // Handle images (Crucial fix: actually send images to the backend)
+      if (formData.image) {
+        payload.image_url = formData.image;
+      }
+      if (formData.gallery && formData.gallery.length > 0) {
+        payload.gallery_images = formData.gallery;
+      }
+
       if (product) {
         // Use the most reliable ID for the update
         await api.patch(`/products/${product.slug}/`, payload);
