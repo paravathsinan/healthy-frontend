@@ -40,7 +40,7 @@ export default function LoginPage() {
       const { token } = response.data;
       
       localStorage.setItem("access_token", token);
-      document.cookie = `access_token=${token}; path=/; max-age=86400;`;
+      document.cookie = `access_token=${token}; path=/; max-age=86400; SameSite=Lax;`;
       
       toast.success("Welcome back, Admin!");
       router.push("/admin");
@@ -52,9 +52,12 @@ export default function LoginPage() {
         setError("Unable to connect to the server. Please check your internet or try again later.");
       }
     } finally {
-
       setLoading(false);
     }
+  };
+
+  const handleLogoClick = () => {
+    window.location.href = '/';
   };
 
   return (
@@ -62,7 +65,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8 bg-white p-10 rounded-[2.5rem] shadow-2xl border border-gray-100 animate-in fade-in zoom-in duration-500">
         <div className="text-center">
           <div className="flex justify-center mb-6">
-            <div className="relative w-16 h-16 transition-transform hover:scale-110 duration-300">
+            <div 
+              onClick={handleLogoClick}
+              className="relative w-16 h-16 transition-transform hover:scale-110 duration-300 cursor-pointer"
+            >
               <Image src="/logo/logo.png" alt="Logo" fill sizes="64px" className="object-contain" />
             </div>
           </div>

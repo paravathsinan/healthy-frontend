@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingCart, Heart, Menu, Truck, ChevronDown, X } from "lucide-react";
+import { Search, ShoppingCart, Heart, Menu, Truck, ChevronDown, X, ChevronRight, User } from "lucide-react";
 import { Facebook, Instagram, Linkedin, Youtube } from "@/components/shared/Icons";
 import { useCartStore } from "@/store/useCartStore";
 import { CartDrawer, GlobalMobileCart } from "@/components/cart/CartDrawer";
@@ -27,10 +27,134 @@ const STATIC_NAV_LINKS = [
   { name: "Shop Offline", href: "/offline" },
 ];
 
+const MobileMenu = ({ 
+  isOpen, 
+  setIsOpen, 
+  categories, 
+  activeCategory, 
+  setActiveCategory 
+}: { 
+  isOpen: boolean; 
+  setIsOpen: (open: boolean) => void;
+  categories: any[];
+  activeCategory: string | null;
+  setActiveCategory: (cat: string | null) => void;
+}) => (
+  <Sheet open={isOpen} onOpenChange={setIsOpen}>
+    <button 
+      onClick={() => setIsOpen(true)}
+      className="p-2 -ml-2 text-gray-700 hover:opacity-70 transition-opacity"
+    >
+      <Menu className="h-8 w-8" />
+    </button>
+    <SheetContent side="left" className="w-[85%] sm:w-[400px] p-0 border-none bg-white flex flex-col h-full z-[150]">
+      {/* Header */}
+      <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-20">
+        <SheetTitle className="text-xl font-bold text-gray-900 font-heading">Menu</SheetTitle>
+        <button 
+          onClick={() => setIsOpen(false)}
+          className="rounded-full p-2 hover:bg-gray-100 transition-colors border border-gray-100 shadow-sm"
+        >
+          <X className="w-6 h-6 text-gray-900" />
+          <span className="sr-only">Close menu</span>
+        </button>
+      </div>
+      <SheetDescription className="sr-only">
+        Navigation menu to browse product categories and pages.
+      </SheetDescription>
+
+      {/* Navigation Items */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="flex flex-col">
+          {STATIC_NAV_LINKS.map((link) => (
+            <div key={link.name} className="relative">
+              <div className="flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                {/* Main Link/Text */}
+                <Link 
+                  href={link.href} 
+                  onClick={() => setIsOpen(false)}
+                  className="text-[15px] font-bold text-gray-900 flex-1 px-6 py-4"
+                >
+                  {link.name}
+                </Link>
+
+                {/* Dropdown Toggle */}
+                {link.isDynamic && (
+                  <div 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setActiveCategory(activeCategory === link.name ? null : link.name);
+                    }}
+                    className="px-6 py-4 text-gray-400 hover:text-black transition-all cursor-pointer border-l border-gray-50/50"
+                  >
+                    <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${activeCategory === link.name ? 'rotate-90' : ''}`} />
+                  </div>
+                )}
+              </div>
+
+              {/* Sub-menu (Categories) */}
+              {link.isDynamic && activeCategory === link.name && (
+                <div className="bg-gray-50/50 border-b border-gray-100 overflow-hidden animate-in slide-in-from-top-2 duration-300">
+                  {categories.length > 0 ? (
+                    categories.map((cat) => (
+                      <Link 
+                        key={cat.id}
+                        href={`/category/${cat.slug}`} 
+                        onClick={() => setIsOpen(false)}
+                        className="block px-12 py-3.5 text-[14px] text-gray-600 font-bold hover:text-[#006837] border-b border-gray-100/30 last:border-none transition-colors"
+                      >
+                        {cat.name}
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="px-12 py-4 text-[13px] text-gray-400 font-medium italic">Loading categories...</div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Track Order Link */}
+          <div className="flex items-center px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors relative">
+            <Link 
+              href="/track-order" 
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 text-gray-900 flex-1 py-1"
+            >
+              <span className="text-[15px] font-bold">Track Order</span>
+              <Truck className="h-5 w-5 text-gray-400" />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Social Footer */}
+      <div className="p-6 border-t border-gray-100 bg-white mt-auto">
+        <div className="flex items-center gap-6">
+          <Link href="#" className="text-gray-900 hover:text-[#006837] transition-colors">
+            <Facebook className="h-5 w-5" />
+          </Link>
+          <Link href="#" className="text-gray-900 hover:text-[#006837] transition-colors">
+            <Instagram className="h-5 w-5" />
+          </Link>
+          <Link href="#" className="text-gray-900 hover:text-[#006837] transition-colors">
+            <Linkedin className="h-5 w-5" />
+          </Link>
+          <Link href="#" className="text-gray-900 hover:text-[#006837] transition-colors">
+            <Youtube className="h-5 w-5" />
+          </Link>
+        </div>
+      </div>
+    </SheetContent>
+  </Sheet>
+);
+
 
 export const Navbar = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeMobileCategory, setActiveMobileCategory] = useState<string | null>(null);
   const [isSticky, setIsSticky] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -67,69 +191,13 @@ export const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  // Shared Mobile Menu Content to avoid duplication
-  const MobileMenu = () => (
-    <Sheet>
-      <SheetTrigger asChild>
-        <button className="p-2 -ml-2 text-gray-700">
-          <Menu className="h-8 w-8" />
-        </button>
-      </SheetTrigger>
-      <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0 border-none bg-white flex flex-col">
-        <SheetHeader className="p-6 border-b border-gray-100 flex flex-row items-center justify-between space-y-0">
-          <SheetTitle className="text-2xl font-bold text-gray-900">Menu</SheetTitle>
-          <SheetDescription className="sr-only">
-            Navigation menu to browse product categories and pages.
-          </SheetDescription>
-          <SheetClose className="rounded-full p-2 hover:bg-gray-100 transition-colors">
-            <X className="w-6 h-6 text-gray-900" />
-          </SheetClose>
-        </SheetHeader>
-        <div className="flex-1 overflow-y-auto">
-          <div className="flex flex-col py-2">
-            {STATIC_NAV_LINKS.map((link) => (
-              <div key={link.name}>
-                <div 
-                  className="flex items-center justify-between px-6 py-4 border-b border-gray-50"
-                  onClick={() => link.isDynamic && setActiveMobileCategory(activeMobileCategory === link.name ? null : link.name)}
-                >
-                  {link.isDynamic ? (
-                    <span className="text-[18px] font-medium text-gray-900">{link.name}</span>
-                  ) : (
-                    <SheetClose asChild>
-                      <Link href={link.href} className="text-[18px] font-medium text-gray-900">{link.name}</Link>
-                    </SheetClose>
-                  )}
-                  {link.isDynamic && <ChevronDown className={`w-5 h-5 transition-transform ${activeMobileCategory === link.name ? 'rotate-180' : ''}`} />}
-                </div>
-                {link.isDynamic && activeMobileCategory === link.name && (
-                  <div className="bg-gray-50 py-2">
-                    {categories.map((cat) => (
-                      <SheetClose asChild key={cat.id}>
-                        <Link href={`/category/${cat.slug}`} className="block px-10 py-3 text-[16px] text-gray-700 font-medium">{cat.name}</Link>
-                      </SheetClose>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-            <div className="p-6">
-              <SheetClose asChild>
-                <Link href="/track-order" className="flex items-center gap-3 text-gray-900 font-medium py-2">
-                  <Truck className="h-5 w-5" />
-                  <span className="text-[18px]">Track Order</span>
-                </Link>
-              </SheetClose>
-            </div>
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
+  const handleLogoClick = () => {
+    window.location.href = '/';
+  };
 
   return (
     <>
-      <header className="relative bg-white z-[100]">
+      <header className="relative bg-white z-30">
         {/* 1. Announcement Bar */}
         <div className="bg-[#006837] text-white py-2.5 px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-7xl mx-auto flex justify-between items-center text-[13px] tracking-wide">
@@ -160,23 +228,29 @@ export const Navbar = () => {
 
         {/* 2. Main Mobile Header (Always at the top) */}
         <div className="md:hidden px-6 pt-4 pb-2 flex items-center justify-between border-b border-gray-100 bg-white">
-          <MobileMenu />
-          <Link href="/" className="absolute left-1/2 -translate-x-1/2">
+          <MobileMenu 
+            isOpen={isMobileMenuOpen} 
+            setIsOpen={setIsMobileMenuOpen}
+            categories={categories}
+            activeCategory={activeMobileCategory}
+            setActiveCategory={setActiveMobileCategory}
+          />
+          <div onClick={handleLogoClick} className="absolute left-1/2 -translate-x-1/2 cursor-pointer">
             <div className="relative w-12 h-12">
               <Image src="/logo/logo.png" alt="Logo" fill sizes="48px" className="object-contain" priority />
             </div>
-          </Link>
+          </div>
           <CartDrawer showOnlyIcon hideBadge={true} />
         </div>
 
         {/* 3. Main Desktop Header */}
         <div className="hidden md:block border-b border-gray-100 py-6 bg-white">
           <div className="max-w-7xl mx-auto px-8 flex justify-between items-center gap-12">
-            <Link href="/" className="shrink-0">
+            <div onClick={handleLogoClick} className="shrink-0 cursor-pointer">
               <div className="relative w-20 h-20">
                 <Image src="/logo/logo.png" alt="Logo" fill sizes="80px" className="object-contain" priority />
               </div>
-            </Link>
+            </div>
             <div className="flex-1 flex items-center justify-end gap-4">
               <div className="flex-1 max-w-xl relative group">
                 <input type="text" placeholder="Search for..." className="w-full bg-[#F9F9F9] border border-gray-300 rounded-full py-3.5 pl-14 pr-6 text-gray-900 placeholder:text-gray-500 outline-none focus:ring-4 focus:ring-[#006837]/5 focus:border-[#006837] shadow-sm" />
@@ -250,12 +324,18 @@ export const Navbar = () => {
 
             {/* Mobile Sticky View - EXACTLY AS REQUESTED */}
             <div className="lg:hidden px-6 pt-4 pb-2 flex items-center justify-between relative">
-              <MobileMenu />
-              <Link href="/" className="absolute left-1/2 -translate-x-1/2">
+              <MobileMenu 
+                isOpen={isMobileMenuOpen} 
+                setIsOpen={setIsMobileMenuOpen}
+                categories={categories}
+                activeCategory={activeMobileCategory}
+                setActiveCategory={setActiveMobileCategory}
+              />
+              <div onClick={handleLogoClick} className="absolute left-1/2 -translate-x-1/2 cursor-pointer">
                 <div className="relative w-10 h-10">
                   <Image src="/logo/logo.png" alt="Logo" fill sizes="40px" className="object-contain" />
                 </div>
-              </Link>
+              </div>
               <CartDrawer showOnlyIcon />
             </div>
           </motion.div>

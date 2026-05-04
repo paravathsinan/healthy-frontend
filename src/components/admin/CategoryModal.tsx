@@ -168,10 +168,13 @@ export function CategoryModal({ isOpen, onClose, category, onSuccess }: Category
             </Button>
             <Button 
               type="submit" 
+              disabled={loading}
               loading={loading}
-              className="rounded-full px-12 py-6 bg-[#006837] text-white font-bold hover:bg-black transition-all shadow-lg shadow-[#006837]/20 flex-1"
+              className="rounded-full px-12 py-6 bg-[#006837] text-white font-bold hover:bg-black transition-all shadow-lg shadow-[#006837]/20 flex-1 min-w-[180px]"
             >
-              {category ? "Update Category" : "Create Category"}
+              {loading 
+                ? (category ? "Updating..." : "Creating...") 
+                : (category ? "Update Category" : "Create Category")}
             </Button>
           </DialogFooter>
         </form>

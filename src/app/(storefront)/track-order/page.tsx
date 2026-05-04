@@ -134,7 +134,7 @@ function TrackOrderContent() {
   const statusInfo = order ? getStatusDisplay(order.status) : null;
 
   return (
-    <div className="min-h-screen bg-[#F9F9F9] pt-12 pb-24 px-4 sm:px-6">
+    <div className="min-h-fit bg-[#F9F9F9] pt-6 pb-6 sm:pt-12 sm:pb-12 px-4 sm:px-6">
       <div className="max-w-3xl mx-auto">
         {/* Back to Home */}
         <Link 
@@ -146,7 +146,7 @@ function TrackOrderContent() {
         </Link>
 
         {/* Header */}
-        <div className="text-center space-y-3 mb-12 scroll-mt-12">
+        <div className="text-center space-y-3 mb-4 sm:mb-8 scroll-mt-12">
           <h1 className="text-4xl font-black text-gray-900 tracking-tight font-heading italic">
             Track Your Order
           </h1>
@@ -156,7 +156,7 @@ function TrackOrderContent() {
         </div>
 
         {/* Search Box */}
-        <div ref={titleRef} className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-black/5 border border-gray-100 mb-12">
+        <div ref={titleRef} className="bg-white rounded-[2.5rem] p-6 md:p-10 shadow-xl shadow-black/5 border border-gray-100 mb-4 sm:mb-8">
           <form onSubmit={handleTrack} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">

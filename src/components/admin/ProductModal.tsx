@@ -92,8 +92,8 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
         name: product.name || "",
         description: product.description || "",
         category: "", // Managed by Live Sync above
-        base_price: baseVariant ? baseVariant.price : (product.cheapest_variant_price || ""),
-        base_discount_price: baseVariant ? (baseVariant.discount_price || "") : "",
+        base_price: product.admin_price || "",
+        base_discount_price: product.variants?.find((v: any) => v.price === product.admin_price)?.discount_price || "",
         is_featured: product.is_featured || false,
         is_new_arrival: product.is_new_arrival || false,
         is_sold_out: product.is_sold_out || false,
@@ -360,7 +360,7 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Price (₹)</Label>
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Price (₹) / 1kg or Unit</Label>
                       <Input 
                         type="number"
                         readOnly={!isEditing}
@@ -371,7 +371,7 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Old Price (₹)</Label>
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Old Price (₹) / 1kg or Unit</Label>
                       <Input 
                         type="number"
                         readOnly={!isEditing}
@@ -484,7 +484,7 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
               <div className="flex items-center gap-4 flex-1">
                 {!isEditing && (
                   <div>
-                    <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Product Price</p>
+                    <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Product Price / 1kg or Unit</p>
                     <p className="text-2xl md:text-3xl font-black text-gray-900 font-heading tracking-tighter">₹{formData.base_price}</p>
                   </div>
                 )}
@@ -524,10 +524,19 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
                     type="submit"
                     onClick={handleSubmit}
                     disabled={loading}
-                    className="bg-[#006837] text-white px-12 py-4 rounded-full text-sm font-bold hover:bg-black transition-all shadow-lg shadow-[#006837]/20 flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
+                    className="bg-[#006837] text-white px-12 py-4 rounded-full text-sm font-bold hover:bg-black transition-all shadow-lg shadow-[#006837]/20 flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 min-w-[200px]"
                   >
-                    <Save size={18} />
-                    Save Changes
+                    {loading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>{product ? "Saving..." : "Adding..."}</span>
+                      </div>
+                    ) : (
+                      <>
+                        {product ? <Save size={18} /> : <Plus size={18} />}
+                        {product ? "Save Changes" : "Add Product"}
+                      </>
+                    )}
                   </button>
                 )}
               </div>

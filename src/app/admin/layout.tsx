@@ -35,11 +35,32 @@ export default function AdminLayout({
     }
 
     if (!token) {
-      setIsAuthLoading(false); // Stop loading before redirecting to allow the route change to be seen/triggered
       router.push('/admin/login');
-    } else {
       setIsAuthLoading(false);
+      return;
     }
+
+    // Safety timeout: If verification takes too long, stop loading
+    const safetyTimeout = setTimeout(() => {
+      setIsAuthLoading(false);
+    }, 5000);
+
+    const verifyToken = async () => {
+      try {
+        // Use the actual API to verify the token
+        const api = (await import('@/lib/api')).default;
+        await api.get('/verify-token/');
+        setIsAuthLoading(false);
+      } catch (error) {
+        console.error("Token verification failed:", error);
+        // Interceptor in api.ts will handle redirect to login on 401
+        setIsAuthLoading(false);
+      } finally {
+        clearTimeout(safetyTimeout);
+      }
+    };
+
+    verifyToken();
   }, [pathname, router]);
 
   // Close sidebar on route change
@@ -62,10 +83,20 @@ export default function AdminLayout({
     }, 800);
   };
 
+  const handleLogoClick = () => {
+    window.location.href = '/';
+  };
+
   if (isAuthLoading && pathname !== '/admin/login') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#006837]" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8F9FA] gap-6">
+        <div className="relative w-16 h-16">
+          <div className="absolute inset-0 border-4 border-[#006837]/10 rounded-full" />
+          <div className="absolute inset-0 border-4 border-t-[#006837] rounded-full animate-spin shadow-[0_0_15px_rgba(0,104,55,0.2)]" />
+        </div>
+        <p className="text-[11px] font-black uppercase tracking-[0.3em] text-[#006837]/40 animate-pulse">
+          Authenticating
+        </p>
       </div>
     );
   }
@@ -90,7 +121,7 @@ export default function AdminLayout({
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <div className="p-6 flex items-center justify-between">
-          <Link href="/admin" className="flex items-center gap-2.5 group">
+          <div onClick={handleLogoClick} className="flex items-center gap-2.5 group cursor-pointer">
             <div className="relative w-8 h-8 transition-transform duration-300 group-hover:scale-110">
               <Image 
                 src="/logo/logo.png" 
@@ -103,7 +134,7 @@ export default function AdminLayout({
             <span className="text-lg font-black tracking-tighter text-gray-900 font-heading whitespace-nowrap">
               Healthy Manager
             </span>
-          </Link>
+          </div>
           <button 
             onClick={() => setIsSidebarOpen(false)}
             className="lg:hidden p-2 text-gray-400 hover:text-black transition-colors"

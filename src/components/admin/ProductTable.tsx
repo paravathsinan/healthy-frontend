@@ -16,6 +16,14 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger 
 } from "@/components/ui/alert-dialog";
 
+const formatWeight = (weight: string) => {
+  if (!weight) return "";
+  const normalized = weight.toLowerCase().trim();
+  if (normalized === "1000 g" || normalized === "1000g") return "1kg";
+  if (normalized === "1 unit" || normalized === "1unit") return "unit";
+  return weight.toLowerCase();
+};
+
 export default function AdminProductTable({ products: initialProducts, categories, onSuccess }: { products: any[], categories: any[], onSuccess: () => void }) {
   const router = useRouter();
   const [productList, setProductList] = useState(initialProducts);
@@ -63,7 +71,7 @@ export default function AdminProductTable({ products: initialProducts, categorie
             <TableHead className="font-bold text-gray-900 h-12 px-6 text-[11px] uppercase tracking-wider">Product</TableHead>
             <TableHead className="font-bold text-gray-900 h-12 text-[11px] uppercase tracking-wider">Category</TableHead>
             <TableHead className="font-bold text-gray-900 h-12 text-[11px] uppercase tracking-wider">Status</TableHead>
-            <TableHead className="font-bold text-gray-900 h-12 text-[11px] uppercase tracking-wider">Price (INR)</TableHead>
+            <TableHead className="font-bold text-gray-900 h-12 text-[11px] uppercase tracking-wider">Price / 1kg or Unit</TableHead>
             <TableHead className="font-bold text-gray-900 h-12 text-right px-6 text-[11px] uppercase tracking-wider">Updated</TableHead>
           </TableRow>
         </TableHeader>
@@ -111,7 +119,14 @@ export default function AdminProductTable({ products: initialProducts, categorie
                 )}
               </TableCell>
               <TableCell>
-                <span className="text-gray-900 font-bold text-[13px]">₹{product.cheapest_variant_price}</span>
+                <div className="flex flex-col">
+                  <span className="text-gray-900 font-bold text-[13px]">₹{product.admin_price}</span>
+                  {product.admin_weight && (
+                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">
+                      / {formatWeight(product.admin_weight)}
+                    </span>
+                  )}
+                </div>
               </TableCell>
               <TableCell className="text-right px-6 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                 {new Date(product.updated_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
