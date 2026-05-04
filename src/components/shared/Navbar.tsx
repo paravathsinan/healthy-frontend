@@ -151,26 +151,16 @@ const MobileMenu = ({
 );
 
 
+import { useCategories } from "@/context/CategoryContext";
+
 export const Navbar = () => {
-  const [categories, setCategories] = useState<any[]>([]);
+  const { categories, loading: categoriesLoading } = useCategories();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeMobileCategory, setActiveMobileCategory] = useState<string | null>(null);
   const [isSticky, setIsSticky] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const isCartOpen = useCartStore((state) => state.isCartOpen);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await getCategories();
-        setCategories(data);
-      } catch (error) {
-        console.error("Failed to fetch categories in navbar:", error);
-      }
-    };
-    fetchCategories();
-  }, []);
 
 
   useEffect(() => {
@@ -237,7 +227,7 @@ export const Navbar = () => {
           />
           <div onClick={handleLogoClick} className="absolute left-1/2 -translate-x-1/2 cursor-pointer">
             <div className="relative w-12 h-12">
-              <Image src="/logo/logo.png" alt="Logo" fill sizes="48px" className="object-contain" priority />
+              <Image src="/logo/logo.png" alt="Logo" fill sizes="48px" className="object-contain" />
             </div>
           </div>
           <CartDrawer showOnlyIcon />
@@ -248,7 +238,7 @@ export const Navbar = () => {
           <div className="max-w-7xl mx-auto px-8 flex justify-between items-center gap-12">
             <div onClick={handleLogoClick} className="shrink-0 cursor-pointer">
               <div className="relative w-20 h-20">
-                <Image src="/logo/logo.png" alt="Logo" fill sizes="80px" className="object-contain" priority />
+                <Image src="/logo/logo.png" alt="Logo" fill sizes="80px" className="object-contain" />
               </div>
             </div>
             <div className="flex-1 flex items-center justify-end gap-4">

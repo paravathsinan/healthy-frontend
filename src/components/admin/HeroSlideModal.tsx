@@ -103,7 +103,7 @@ export function HeroSlideModal({ isOpen, onClose, slide, onSuccess }: HeroSlideM
                 placeholder="e.g. Nature's Finest Selection"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="rounded-xl border-gray-200 bg-white h-12 font-semibold text-gray-900"
+                className="rounded-xl border-[#006837]/20 focus:border-[#006837] focus-visible:ring-0 focus-visible:ring-offset-0 bg-white h-12 font-semibold text-gray-900 transition-all"
                 required
               />
             </div>
@@ -115,7 +115,7 @@ export function HeroSlideModal({ isOpen, onClose, slide, onSuccess }: HeroSlideM
                 placeholder="e.g. From the heart of the world's best groves..."
                 value={formData.subtitle}
                 onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
-                className="rounded-xl border-gray-200 bg-white min-h-[100px] font-semibold text-gray-900"
+                className="rounded-xl border-[#006837]/20 focus:border-[#006837] focus-visible:ring-0 focus-visible:ring-offset-0 bg-white min-h-[100px] font-semibold text-gray-900 transition-all"
               />
             </div>
 
@@ -126,7 +126,7 @@ export function HeroSlideModal({ isOpen, onClose, slide, onSuccess }: HeroSlideM
                   id="btn_text"
                   value={formData.button_text}
                   onChange={(e) => setFormData({ ...formData, button_text: e.target.value })}
-                  className="rounded-xl border-gray-200 bg-white h-12 font-semibold text-gray-900"
+                  className="rounded-xl border-[#006837]/20 focus:border-[#006837] focus-visible:ring-0 focus-visible:ring-offset-0 bg-white h-12 font-semibold text-gray-900 transition-all"
                 />
               </div>
               <div className="space-y-2">
@@ -135,7 +135,7 @@ export function HeroSlideModal({ isOpen, onClose, slide, onSuccess }: HeroSlideM
                   id="btn_link"
                   value={formData.button_link}
                   onChange={(e) => setFormData({ ...formData, button_link: e.target.value })}
-                  className="rounded-xl border-gray-200 bg-white h-12 font-semibold text-gray-900"
+                  className="rounded-xl border-[#006837]/20 focus:border-[#006837] focus-visible:ring-0 focus-visible:ring-offset-0 bg-white h-12 font-semibold text-gray-900 transition-all"
                 />
               </div>
             </div>
@@ -148,7 +148,7 @@ export function HeroSlideModal({ isOpen, onClose, slide, onSuccess }: HeroSlideM
                   type="number"
                   value={formData.display_order}
                   onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) })}
-                  className="rounded-xl border-gray-200 bg-white h-12 font-semibold text-gray-900"
+                  className="rounded-xl border-[#006837]/20 focus:border-[#006837] focus-visible:ring-0 focus-visible:ring-offset-0 bg-white h-12 font-semibold text-gray-900 transition-all"
                 />
               </div>
               <div className="flex items-center gap-3 pt-6">
@@ -213,7 +213,7 @@ export function HeroSlideModal({ isOpen, onClose, slide, onSuccess }: HeroSlideM
               </Button>
               <Button 
                 type="submit" 
-                disabled={loading}
+                loading={loading}
                 className="rounded-full px-12 py-6 bg-[#006837] text-white font-bold hover:bg-black transition-all shadow-lg shadow-[#006837]/20 flex-1"
               >
                 {slide ? "Update Slide" : "Create Slide"}

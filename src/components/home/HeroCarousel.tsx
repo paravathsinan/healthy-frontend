@@ -24,12 +24,15 @@ const variants = {
   })
 };
 
-export default function HeroCarousel() {
-  const [slides, setSlides] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function HeroCarousel({ initialSlides }: { initialSlides?: any[] }) {
+  const [slides, setSlides] = useState<any[]>(initialSlides || []);
+  const [loading, setLoading] = useState(!initialSlides);
   const [[page, direction], setPage] = useState([0, 0]);
 
   useEffect(() => {
+    // Only fetch if slides weren't provided via props
+    if (initialSlides) return;
+    
     const fetchSlides = async () => {
       try {
         const data = await getHeroSlides();
@@ -41,7 +44,7 @@ export default function HeroCarousel() {
       }
     };
     fetchSlides();
-  }, []);
+  }, [initialSlides]);
 
   const currentIndex = slides.length > 0 ? Math.abs(page % slides.length) : 0;
 
@@ -111,7 +114,7 @@ export default function HeroCarousel() {
                 fill
                 sizes="100vw"
                 className="object-cover"
-                priority
+                priority={currentIndex === 0}
               />
 
               {/* Content Overlay */}

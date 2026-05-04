@@ -59,14 +59,14 @@ export const Footer = () => {
           <div>
             <h3 className="text-[14px] font-bold mb-6 tracking-wider uppercase">KNOW US</h3>
             <ul className="space-y-3 text-[14px] text-gray-800">
-              <li><Link href="/about" className="hover:underline decoration-1 underline-offset-4">About Us</Link></li>
-              <li><Link href="/events" className="hover:underline decoration-1 underline-offset-4">Events</Link></li>
-              <li><Link href="/recipes" className="hover:underline decoration-1 underline-offset-4">Recipes</Link></li>
-              <li><Link href="/contact" className="hover:underline decoration-1 underline-offset-4">Contact Us</Link></li>
-              <li><Link href="/blog" className="hover:underline decoration-1 underline-offset-4">Blog</Link></li>
+              <li><Link href="/about" prefetch={false} className="hover:underline decoration-1 underline-offset-4">About Us</Link></li>
+              <li><Link href="/events" prefetch={false} className="hover:underline decoration-1 underline-offset-4">Events</Link></li>
+              <li><Link href="/recipes" prefetch={false} className="hover:underline decoration-1 underline-offset-4">Recipes</Link></li>
+              <li><Link href="/contact" prefetch={false} className="hover:underline decoration-1 underline-offset-4">Contact Us</Link></li>
+              <li><Link href="/blog" prefetch={false} className="hover:underline decoration-1 underline-offset-4">Blog</Link></li>
               <li><Link href="/track-order" className="hover:underline decoration-1 underline-offset-4">Track Order</Link></li>
-              <li><Link href="/corporate" className="hover:underline decoration-1 underline-offset-4">Corporate orders</Link></li>
-              <li><Link href="/wholesale" className="hover:underline decoration-1 underline-offset-4">Wholesale Enquiry</Link></li>
+              <li><Link href="/corporate" prefetch={false} className="hover:underline decoration-1 underline-offset-4">Corporate orders</Link></li>
+              <li><Link href="/wholesale" prefetch={false} className="hover:underline decoration-1 underline-offset-4">Wholesale Enquiry</Link></li>
             </ul>
           </div>
 
@@ -74,11 +74,11 @@ export const Footer = () => {
           <div>
             <h3 className="text-[14px] font-bold mb-6 tracking-wider uppercase">POLICIES</h3>
             <ul className="space-y-3 text-[14px] text-gray-800">
-              <li><Link href="/privacy" className="hover:underline decoration-1 underline-offset-4">Privacy Policy</Link></li>
-              <li><Link href="/return" className="hover:underline decoration-1 underline-offset-4">Return Policy</Link></li>
-              <li><Link href="/refund" className="hover:underline decoration-1 underline-offset-4">Refund Policy</Link></li>
-              <li><Link href="/shipping" className="hover:underline decoration-1 underline-offset-4">Shipping Policy</Link></li>
-              <li><Link href="/terms" className="hover:underline decoration-1 underline-offset-4">Terms and Condition</Link></li>
+              <li><Link href="/privacy" prefetch={false} className="hover:underline decoration-1 underline-offset-4">Privacy Policy</Link></li>
+              <li><Link href="/return" prefetch={false} className="hover:underline decoration-1 underline-offset-4">Return Policy</Link></li>
+              <li><Link href="/refund" prefetch={false} className="hover:underline decoration-1 underline-offset-4">Refund Policy</Link></li>
+              <li><Link href="/shipping" prefetch={false} className="hover:underline decoration-1 underline-offset-4">Shipping Policy</Link></li>
+              <li><Link href="/terms" prefetch={false} className="hover:underline decoration-1 underline-offset-4">Terms and Condition</Link></li>
             </ul>
           </div>
         </div>

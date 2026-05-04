@@ -10,23 +10,23 @@ export function ChocolateBanner() {
           {/* Mobile Image */}
           <div className="md:hidden w-full h-full relative">
             <Image 
-              src="/images/banners/premium_chocolate_mobile.png" 
+              src="/images/banners/chocolate_banner_desktop.png" 
               alt="Premium Chocolate Delight" 
               fill 
-              sizes="(max-width: 768px) 100vw, 100vw"
+              sizes="100vw"
               className="object-cover object-center"
-              priority
+              loading="lazy"
             />
           </div>
           {/* Desktop Image */}
           <div className="hidden md:block w-full h-full relative">
             <Image 
-              src="/images/banners/ChatGPT Image Apr 27, 2026, 08_48_01 PM.png" 
+              src="/images/banners/chocolate_banner_desktop.png" 
               alt="Chocolate Delight" 
               fill 
-              sizes="(max-width: 768px) 100vw, 100vw"
+              sizes="100vw"
               className="object-cover object-right"
-              priority
+              loading="lazy"
             />
           </div>
         </div>

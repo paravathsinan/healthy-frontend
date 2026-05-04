@@ -1,17 +1,23 @@
 import axios from 'axios';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-const API_BASE_URL = `${API}/api/v1`;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+const API_BASE_URL = `${API_URL}/api/v1`;
+
+console.log(`🚀 API Base URL: ${API_BASE_URL}`);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 10000, // 10 seconds timeout
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Add interceptor to add token to headers
+// Interceptor for timing and logging
 api.interceptors.request.use((config) => {
+  // @ts-ignore
+  config.metadata = { startTime: new Date() };
+  
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('access_token');
     if (token) {
@@ -21,49 +27,115 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-
-// Add interceptor to handle unauthorized responses
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  (response) => {
+    // @ts-ignore
+    const duration = new Date().getTime() - response.config.metadata.startTime.getTime();
+    console.log(`✅ API Success: [${response.config.method?.toUpperCase()}] ${response.config.url} - ${duration}ms`);
+    return response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // @ts-ignore
+    const duration = originalRequest?.metadata?.startTime 
+      ? new Date().getTime() - originalRequest.metadata.startTime.getTime() 
+      : 'unknown';
+
+    console.error(`❌ API Error: [${originalRequest?.method?.toUpperCase()}] ${originalRequest?.url} - ${duration}ms - ${error.message}`);
+
+    // Handle Backend Sleep (Render Free Plan) - Retry once after 2 seconds
+    if (error.code === 'ECONNABORTED' || error.message.includes('Network Error')) {
+      if (!originalRequest._retry) {
+        originalRequest._retry = true;
+        console.log('🔄 Backend might be sleeping (Render). Retrying in 2s...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return api(originalRequest);
+      }
+    }
+
+    // Handle Unauthorized
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('access_token');
-        window.location.href = '/admin/login';
+        // Avoid infinite loops
+        if (!window.location.pathname.includes('/admin/login')) {
+          window.location.href = '/admin/login';
+        }
       }
     }
+    
     return Promise.reject(error);
   }
 );
 
+// --- API Methods (Optimized with Fetch for Server-Side Caching) ---
+
 export const getCategories = async () => {
-  const response = await api.get('/categories/');
-  return response.data;
+  try {
+    const res = await fetch(`${API_BASE_URL}/categories/`, {
+      next: { revalidate: 60 } // Cache for 1 minute
+    });
+    if (!res.ok) throw new Error('Network response was not ok');
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    // Fallback to axios if fetch fails or for client-side
+    const response = await api.get('/categories/');
+    return response.data;
+  }
 };
 
-export const getAllCategorySlugs = async () => {
-  const response = await api.get('/categories/');
-  return response.data.map((c: { slug: string }) => ({ slug: c.slug }));
-};
-
-export const getProducts = async (params = {}) => {
-  const response = await api.get('/products/', { params });
-  return response.data;
-};
-
-export const getAllProductSlugs = async () => {
-  const response = await api.get('/products/');
-  return response.data.map((p: { slug: string; updated_at?: string }) => ({ slug: p.slug, updated_at: p.updated_at || new Date().toISOString() }));
+export const getProducts = async (params: any = {}) => {
+  try {
+    const queryString = new URLSearchParams(params).toString();
+    const res = await fetch(`${API_BASE_URL}/products/${queryString ? `?${queryString}` : ''}`, {
+      next: { revalidate: 60 }
+    });
+    if (!res.ok) throw new Error('Network response was not ok');
+    const data = await res.json();
+    return data.results || data;
+  } catch (error) {
+    const response = await api.get('/products/', { params });
+    return response.data.results || response.data;
+  }
 };
 
 export const getProductDetail = async (slug: string) => {
-  const response = await api.get(`/products/${slug}/`);
-  return response.data;
+  try {
+    const res = await fetch(`${API_BASE_URL}/products/${slug}/`, {
+      next: { revalidate: 3600 } // Cache detail pages longer (1 hour)
+    });
+    if (!res.ok) throw new Error('Network response was not ok');
+    return await res.json();
+  } catch (error) {
+    const response = await api.get(`/products/${slug}/`);
+    return response.data;
+  }
 };
 
-export const getProductBySlug = async (slug: string) => {
-  const response = await api.get(`/products/${slug}/`);
-  return response.data;
+export const getHomepageData = async () => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/homepage/`, {
+      next: { revalidate: 60 }
+    });
+    if (!res.ok) throw new Error('Network response was not ok');
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to fetch homepage data via fetch, trying axios fallback.");
+    try {
+      const response = await api.get('/homepage/');
+      return response.data;
+    } catch (e) {
+      return {
+        hero: [],
+        categories: [],
+        featured: [],
+        new_arrivals: [],
+        chocolates: []
+      };
+    }
+  }
 };
 
 export const createOrder = async (orderData: any) => {
@@ -77,9 +149,39 @@ export const getDashboardStats = async () => {
 };
 
 export const getHeroSlides = async () => {
-  const response = await api.get('/heroslides/');
-  return response.data;
+  try {
+    const response = await api.get('/heroslides/');
+    return response.data;
+  } catch (error) {
+    return [];
+  }
+};
+
+// --- Helper Methods for Sitemap & Dynamic Routes ---
+
+export const getProductBySlug = getProductDetail;
+
+export const getAllProductSlugs = async () => {
+  try {
+    const products = await getProducts();
+    return products.map((p: any) => ({ 
+      slug: p.slug, 
+      updated_at: p.updated_at || new Date().toISOString() 
+    }));
+  } catch (error) {
+    return [];
+  }
+};
+
+export const getAllCategorySlugs = async () => {
+  try {
+    const categories = await getCategories();
+    return categories.map((c: any) => ({ 
+      slug: c.slug 
+    }));
+  } catch (error) {
+    return [];
+  }
 };
 
 export default api;
-

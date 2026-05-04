@@ -29,6 +29,8 @@ export const metadata: Metadata = {
 import { BfcacheHandler } from "@/components/shared/BfcacheHandler";
 import ScrollToTop from "@/components/shared/ScrollToTop";
 
+import { CategoryProvider } from "@/context/CategoryContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -37,12 +39,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${plusJakartaSans.variable} ${outfit.variable} font-sans antialiased`}>
-        <BfcacheHandler />
-        <Suspense fallback={null}>
-          <ScrollToTop />
-        </Suspense>
-        {children}
-        <Toaster position="top-center" richColors />
+        <CategoryProvider>
+          <BfcacheHandler />
+          <Suspense fallback={null}>
+            <ScrollToTop />
+          </Suspense>
+          {children}
+          <Toaster position="top-center" richColors />
+        </CategoryProvider>
       </body>
     </html>
   );
