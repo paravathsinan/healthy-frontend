@@ -27,6 +27,29 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
   const category = categories.find((c: any) => c.slug === slug);
 
   const categoryName = category?.name || (slug ? (slug.charAt(0).toUpperCase() + slug.slice(1).replace('-', ' ')) : 'Collection');
+  
+  // Sanitize products data to reduce page size
+  const sanitizedProducts = products.map((p: any) => ({
+    id: p.id,
+    name: p.name,
+    slug: p.slug,
+    cheapest_variant_price: p.cheapest_variant_price,
+    primary_image: p.primary_image,
+    is_sold_out: p.is_sold_out,
+    badge_text: p.badge_text,
+    tags: p.tags,
+    on_sale: p.on_sale,
+    variants: p.variants?.map((v: any) => ({
+      id: v.id,
+      weight: v.weight,
+      price: v.price,
+      discount_price: v.discount_price
+    })) || [],
+    images: p.images?.map((img: any) => ({
+      image_url: img.image_url,
+      is_primary: img.is_primary
+    })) || []
+  }));
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-white">
@@ -41,11 +64,11 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
 
       {/* Product Count */}
       <div className="mb-12">
-        <span className="text-[14px] text-gray-400 font-medium">{products.length} products</span>
+        <span className="text-[14px] text-gray-400 font-medium">{sanitizedProducts.length} products</span>
       </div>
 
       {/* Product Grid */}
-      <ProductGrid products={products} />
+      <ProductGrid products={sanitizedProducts} />
 
       {products.length === 0 && (
         <div className="flex flex-col items-center justify-center py-32 border-t border-gray-100 mt-12">

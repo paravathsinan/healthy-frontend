@@ -39,10 +39,27 @@ export default async function ProductPage({ params }: { params: { slug: string }
     );
   }
 
+  // Sanitize product data
+  const sanitizedProduct = {
+    ...product,
+    // Only include necessary variants data
+    variants: product.variants?.map((v: any) => ({
+      id: v.id,
+      weight: v.weight,
+      price: v.price,
+      discount_price: v.discount_price
+    })) || [],
+    // Only include necessary images data
+    images: product.images?.map((img: any) => ({
+      image_url: img.image_url,
+      is_primary: img.is_primary
+    })) || []
+  };
+
   return (
     <main className="min-h-screen bg-white pb-24">
-      <ProductSchema product={product} />
-      <ProductView product={product} />
+      <ProductSchema product={sanitizedProduct} />
+      <ProductView product={sanitizedProduct} />
     </main>
   );
 }

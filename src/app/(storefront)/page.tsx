@@ -32,10 +32,33 @@ export default async function HomePage() {
 
   const { hero, categories, featured: featuredProducts, new_arrivals: newArrivals, chocolates: chocolateProducts } = data;
   
-  // HARD LIMIT: 4 max for storefront sections
-  const topPicks = featuredProducts.slice(0, 4);
-  const limitedNewArrivals = newArrivals.slice(0, 4);
-  const limitedChocolateProducts = chocolateProducts.slice(0, 4);
+  // Helper to sanitize product objects
+  const sanitizeProduct = (p: any) => ({
+    id: p.id,
+    name: p.name,
+    slug: p.slug,
+    cheapest_variant_price: p.cheapest_variant_price,
+    primary_image: p.primary_image,
+    is_sold_out: p.is_sold_out,
+    badge_text: p.badge_text,
+    tags: p.tags,
+    on_sale: p.on_sale,
+    variants: p.variants?.map((v: any) => ({
+      id: v.id,
+      weight: v.weight,
+      price: v.price,
+      discount_price: v.discount_price
+    })) || [],
+    images: p.images?.map((img: any) => ({
+      image_url: img.image_url,
+      is_primary: img.is_primary
+    })) || []
+  });
+
+  // HARD LIMIT: 4 max for storefront sections + Sanitize
+  const topPicks = featuredProducts.slice(0, 4).map(sanitizeProduct);
+  const limitedNewArrivals = newArrivals.slice(0, 4).map(sanitizeProduct);
+  const limitedChocolateProducts = chocolateProducts.slice(0, 4).map(sanitizeProduct);
 
   return (
     <div className="space-y-0 bg-white">
