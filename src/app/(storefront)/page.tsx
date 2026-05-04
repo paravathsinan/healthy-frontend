@@ -47,6 +47,7 @@ export default async function HomePage() {
                   fill 
                   sizes="(max-width: 768px) 50vw, 25vw"
                   className="object-contain transition-transform duration-700 group-hover:scale-110" 
+                  priority={i < 4}
                 />
 
               </div>

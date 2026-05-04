@@ -175,7 +175,30 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
           <div className="w-full md:w-1/2 p-6 md:p-10 overflow-y-auto">
             <div className="space-y-6 md:space-y-8">
               <div className="space-y-2 md:space-y-4">
-                <p className="text-[10px] md:text-[14px] text-gray-500 font-medium uppercase tracking-wider">HEALTHY</p>
+                  {/* Badges Stack */}
+                  <div className="flex flex-wrap gap-1 md:gap-1.5 mb-2">
+                    {product.badge_text && (
+                      <span className="bg-[#D14343] text-white text-[12px] md:text-[15px] font-black px-2 md:px-3 py-0.5 rounded-[2px] uppercase tracking-wider shadow-lg shadow-black/10 border border-white/10 leading-tight">
+                        {product.badge_text}
+                      </span>
+                    )}
+                    {Array.isArray(product.tags) && product.tags.map((tag: string) => {
+                      const t = tag.toLowerCase();
+                      let style = "bg-[#006837] text-white";
+                      if (t.includes('off') || t.includes('save') || t.includes('sale') || t.includes('limited') || t.includes('low') || t.includes('left')) style = "bg-[#D14343] text-white";
+                      else if (t.includes('bestseller') || t.includes('hot') || t.includes('popular')) style = "bg-amber-500 text-white";
+                      else if (t.includes('new') || t.includes('added')) style = "bg-blue-600 text-white";
+                      else if (t.includes('free') || t.includes('delivery') || t.includes('shipping')) style = "bg-teal-600 text-white";
+                      else if (t.includes('natural') || t.includes('organic') || t.includes('health') || t.includes('sugar') || t.includes('quality')) style = "bg-emerald-600 text-white";
+                      else if (t.includes('premium')) style = "bg-purple-600 text-white";
+
+                      return (
+                        <span key={tag} className={`${style} text-[12px] md:text-[15px] font-black px-2 md:px-3 py-0.5 rounded-[2px] uppercase tracking-wider shadow-lg shadow-black/10 border border-white/10 whitespace-nowrap leading-tight`}>
+                          {tag}
+                        </span>
+                      );
+                    })}
+                  </div>
                 <h2 className="text-[28px] md:text-[42px] font-medium text-gray-900 leading-tight tracking-tight font-heading">
                   {product.name}
                 </h2>

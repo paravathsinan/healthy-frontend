@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ShoppingCart, MessageCircle, ChevronRight, Star, ShieldCheck, Truck } from "lucide-react";
+import { ShoppingCart, MessageCircle, Star, ShieldCheck, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useCartStore } from "@/store/useCartStore";
 import { sendWhatsAppOrder } from "@/lib/whatsapp";
 import { toast } from "sonner";
@@ -15,7 +14,7 @@ interface ProductViewProps {
 
 export default function ProductView({ product }: ProductViewProps) {
   // Sort variants by price (smallest to largest)
-  const sortedVariants = [...product.variants].sort((a, b) => a.price - b.price);
+  const sortedVariants = [...(product.variants || [])].sort((a, b) => a.price - b.price);
   const [selectedVariant, setSelectedVariant] = useState(sortedVariants[0]);
   const [isAdding, setIsAdding] = useState(false);
   const [isOrdering, setIsOrdering] = useState(false);
@@ -32,7 +31,7 @@ export default function ProductView({ product }: ProductViewProps) {
       weight: selectedVariant.weight,
       price: selectedVariant.price,
       quantity: 1,
-      image: product.images[0]?.image_url,
+      image: product.images?.[0]?.image_url || product.primary_image,
     });
     setIsAdding(false);
     toast.success("Added to basket!");
@@ -52,7 +51,7 @@ export default function ProductView({ product }: ProductViewProps) {
         <div className="space-y-4">
           <div className="relative aspect-square rounded-3xl overflow-hidden bg-stone-50 border border-stone-100 shadow-sm group">
             <Image 
-              src={product.images[0]?.image_url} 
+              src={product.images?.[0]?.image_url || product.primary_image || '/images/placeholder.png'} 
               alt={product.name} 
               fill 
               sizes="(max-width: 768px) 100vw, 50vw"
@@ -61,7 +60,7 @@ export default function ProductView({ product }: ProductViewProps) {
             />
           </div>
           <div className="grid grid-cols-4 gap-4">
-            {product.images.slice(1).map((img: any, i: number) => (
+            {product.images?.slice(1).map((img: any, i: number) => (
               <div key={i} className="relative aspect-square rounded-xl overflow-hidden bg-stone-50 border border-stone-100">
                 <Image src={img.image_url} alt={product.name} fill sizes="25vw" className="object-cover" />
               </div>
@@ -71,9 +70,29 @@ export default function ProductView({ product }: ProductViewProps) {
 
         {/* Right: Product Info */}
         <div className="flex flex-col">
-          <div className="mb-6 space-y-2">
-            <div className="flex items-center gap-2 mb-2">
-              <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-100">Premium Quality</Badge>
+          <div className="mb-6 space-y-4">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              {product.badge_text && (
+                <span className="bg-[#D14343] text-white text-[12px] md:text-[15px] font-black px-2 md:px-3 py-0.5 rounded-[2px] uppercase tracking-wider shadow-lg shadow-black/10 border border-white/10 leading-tight">
+                  {product.badge_text}
+                </span>
+              )}
+              {Array.isArray(product.tags) && product.tags.map((tag: string) => {
+                const t = tag.toLowerCase();
+                let style = "bg-[#006837] text-white";
+                if (t.includes('off') || t.includes('save') || t.includes('sale') || t.includes('limited') || t.includes('low') || t.includes('left')) style = "bg-[#D14343] text-white";
+                else if (t.includes('bestseller') || t.includes('hot') || t.includes('popular')) style = "bg-amber-500 text-white";
+                else if (t.includes('new') || t.includes('added')) style = "bg-blue-600 text-white";
+                else if (t.includes('free') || t.includes('delivery') || t.includes('shipping')) style = "bg-teal-600 text-white";
+                else if (t.includes('natural') || t.includes('organic') || t.includes('health') || t.includes('sugar') || t.includes('quality')) style = "bg-emerald-600 text-white";
+                else if (t.includes('premium')) style = "bg-purple-600 text-white";
+
+                return (
+                  <span key={tag} className={`${style} text-[12px] md:text-[15px] font-black px-2 md:px-3 py-0.5 rounded-[2px] uppercase tracking-wider shadow-lg shadow-black/10 border border-white/10 whitespace-nowrap leading-tight`}>
+                    {tag}
+                  </span>
+                );
+              })}
               <div className="flex items-center text-amber-500 gap-0.5">
                 <Star className="h-4 w-4 fill-current" />
                 <span className="text-sm font-bold text-stone-900 ml-1">4.9 (120+ reviews)</span>
@@ -92,7 +111,7 @@ export default function ProductView({ product }: ProductViewProps) {
                   key={v.id}
                   onClick={() => setSelectedVariant(v)}
                   className={`px-6 py-3 rounded-2xl border-2 transition-all font-semibold ${
-                    selectedVariant.id === v.id
+                    selectedVariant?.id === v.id
                       ? "border-amber-600 bg-white text-amber-700 shadow-md scale-105"
                       : "border-gray-200 bg-transparent text-gray-500 hover:border-gray-300"
                   }`}
@@ -102,8 +121,8 @@ export default function ProductView({ product }: ProductViewProps) {
               ))}
             </div>
             <div className="flex items-baseline gap-3">
-              <span className="text-4xl font-black text-stone-900">₹{selectedVariant.price}</span>
-              {selectedVariant.discount_price && (
+              <span className="text-4xl font-black text-stone-900">₹{selectedVariant?.price || 0}</span>
+              {selectedVariant?.discount_price && (
                 <span className="text-xl text-gray-400 line-through">₹{selectedVariant.discount_price}</span>
               )}
             </div>

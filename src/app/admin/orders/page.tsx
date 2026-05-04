@@ -146,9 +146,9 @@ export default function AdminWhatsAppLogsPage() {
           </div>
           <p className="text-[13px] text-gray-500 font-medium">Track customer intent from website to WhatsApp.</p>
         </div>
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          <div className="relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <div className="flex items-center gap-2 w-full lg:w-auto">
+          <div className="relative flex-1 sm:w-64 h-[52px]">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-[#006837] transition-colors" />
             <input 
               type="text" 
               placeholder="Search orders..." 
@@ -157,18 +157,17 @@ export default function AdminWhatsAppLogsPage() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="pl-10 pr-4 py-2 rounded-xl border border-gray-200 bg-white text-[13px] font-medium text-gray-900 focus:outline-none focus:border-[#006837] w-full sm:w-64"
+              className="w-full h-full pl-12 pr-4 rounded-2xl border border-gray-200 bg-white text-[13px] font-medium text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#006837] focus:ring-4 focus:ring-[#006837]/5 transition-all"
             />
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`relative flex items-center h-[52px] rounded-2xl font-bold transition-all duration-300 ease-in-out border border-[#006837] hover:bg-[#006837]/5 justify-center ${
-                showFilters 
-                  ? "w-[135px] bg-transparent text-[#006837]" 
-                  : "w-[52px] bg-white text-[#006837]"
-              }`}
-            >
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`relative flex items-center h-[52px] rounded-2xl font-bold transition-all duration-300 ease-in-out border border-[#006837] hover:bg-[#006837]/5 justify-center shrink-0 ${
+              showFilters 
+                ? "w-[120px] bg-[#006837]/5 text-[#006837]" 
+                : "w-[52px] bg-white text-[#006837]"
+            }`}
+          >
               <Filter className="h-4 w-4 shrink-0 text-[#006837]" />
               
               <div className={`flex items-center overflow-hidden transition-all duration-300 ease-in-out ${
@@ -199,8 +198,7 @@ export default function AdminWhatsAppLogsPage() {
               {!showFilters && (statusFilter !== "all" || dateFilter !== "all" || minAmountFilter !== "all" || searchQuery !== "") && (
                 <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-[#006837] border-2 border-white animate-pulse" />
               )}
-            </button>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -211,71 +209,51 @@ export default function AdminWhatsAppLogsPage() {
         }`}
       >
         <div className="overflow-hidden">
-          <div className="flex flex-wrap items-end gap-6 p-6 bg-gray-50/30 rounded-2xl border border-gray-100">
+          <div className="flex flex-row items-end gap-2 p-3 sm:p-6 bg-gray-50/30 rounded-2xl border border-gray-100 w-full overflow-x-auto custom-scrollbar">
             {/* Status Filter */}
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Status</span>
+            <div className="flex flex-col gap-1.5 flex-1 min-w-[100px]">
+              <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1 hidden sm:block">Status</span>
               <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); setCurrentPage(1); }}>
-                <SelectTrigger className={`w-[180px] h-10 rounded-xl text-[12px] font-bold bg-white focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-200 text-gray-600 ${
-                  statusFilter !== "all" 
-                    ? "border-[#006837]" 
-                    : "border-gray-200"
-                } data-[state=open]:border-[#006837]`}>
-                  <SelectValue placeholder="All Status" />
+                <SelectTrigger className={`w-full h-10 rounded-xl text-[12px] font-bold bg-white focus:ring-0 focus:ring-offset-0 focus:border-[#006837] transition-all duration-200 px-3 ${
+                  statusFilter !== "all" ? "border-[#006837] text-[#006837]" : "border-gray-200 text-gray-600"
+                }`}>
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl border-gray-100 bg-white shadow-xl z-[100] min-w-[200px]">
-                  <SelectItem value="all" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">
-                    All Status
-                  </SelectItem>
-                  <SelectItem value="PENDING" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">
-                    Pending
-                  </SelectItem>
-                  <SelectItem value="CONTACTED" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">
-                    Contacted
-                  </SelectItem>
-                  <SelectItem value="AWAITING_PAY" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">
-                    Awaiting Pay
-                  </SelectItem>
-                  <SelectItem value="PAID" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">
-                    Paid
-                  </SelectItem>
-                  <SelectItem value="SHIPPED" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">
-                    Shipped
-                  </SelectItem>
-                  <SelectItem value="COMPLETED" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">
-                    Completed
-                  </SelectItem>
-                  <SelectItem value="CANCELLED" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">
-                    Cancelled
-                  </SelectItem>
+                <SelectContent className="rounded-xl border-gray-100 bg-white shadow-2xl z-[100] min-w-[150px]">
+                  <SelectItem value="all" className="text-[13px] font-black text-gray-900 focus:bg-gray-50 py-2.5 cursor-pointer">All Status</SelectItem>
+                  <SelectItem value="PENDING" className="text-[13px] font-black text-gray-900 focus:bg-gray-50 py-2.5 cursor-pointer">Pending</SelectItem>
+                  <SelectItem value="CONTACTED" className="text-[13px] font-black text-gray-900 focus:bg-gray-50 py-2.5 cursor-pointer">Contacted</SelectItem>
+                  <SelectItem value="AWAITING_PAY" className="text-[13px] font-black text-gray-900 focus:bg-gray-50 py-2.5 cursor-pointer">Awaiting Pay</SelectItem>
+                  <SelectItem value="PAID" className="text-[13px] font-black text-gray-900 focus:bg-gray-50 py-2.5 cursor-pointer">Paid</SelectItem>
+                  <SelectItem value="SHIPPED" className="text-[13px] font-black text-gray-900 focus:bg-gray-50 py-2.5 cursor-pointer">Shipped</SelectItem>
+                  <SelectItem value="COMPLETED" className="text-[13px] font-black text-gray-900 focus:bg-gray-50 py-2.5 cursor-pointer">Completed</SelectItem>
+                  <SelectItem value="CANCELLED" className="text-[13px] font-black text-gray-900 focus:bg-gray-50 py-2.5 cursor-pointer">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Date Filter */}
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Date</span>
+            <div className="flex flex-col gap-1.5 flex-1 min-w-[90px]">
+              <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1 hidden sm:block">Date</span>
               <Select value={dateFilter} onValueChange={(val) => { setDateFilter(val); setCurrentPage(1); }}>
-                <SelectTrigger className={`w-[160px] h-10 rounded-xl text-[12px] font-bold bg-white focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-200 text-gray-600 ${
-                  dateFilter !== "all" 
-                    ? "border-[#006837]" 
-                    : "border-gray-200"
-                } data-[state=open]:border-[#006837]`}>
-                  <SelectValue placeholder="All Time" />
+                <SelectTrigger className={`w-full h-10 rounded-xl text-[12px] font-bold bg-white focus:ring-0 focus:ring-offset-0 focus:border-[#006837] transition-all duration-200 px-3 ${
+                  dateFilter !== "all" ? "border-[#006837] text-[#006837]" : "border-gray-200 text-gray-600"
+                }`}>
+                  <SelectValue placeholder="Date" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl border-gray-100 bg-white shadow-xl z-[100] min-w-[160px]">
-                  <SelectItem value="all" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">All Time</SelectItem>
-                  <SelectItem value="today" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50 text-emerald-600">Today</SelectItem>
-                  <SelectItem value="yesterday" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">Yesterday</SelectItem>
-                  <SelectItem value="7days" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">Last 7 Days</SelectItem>
-                  <SelectItem value="30days" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">Last 30 Days</SelectItem>
+                <SelectContent className="rounded-xl border-gray-100 bg-white shadow-2xl z-[100] min-w-[150px]">
+                  <SelectItem value="all" className="text-[13px] font-black text-gray-900 focus:bg-gray-50 py-2.5 cursor-pointer">All Time</SelectItem>
+                  <SelectItem value="today" className="text-[13px] font-black text-emerald-600 focus:bg-emerald-50 py-2.5 cursor-pointer">Today</SelectItem>
+                  <SelectItem value="yesterday" className="text-[13px] font-black text-gray-900 focus:bg-gray-50 py-2.5 cursor-pointer">Yesterday</SelectItem>
+                  <SelectItem value="7days" className="text-[13px] font-black text-gray-900 focus:bg-gray-50 py-2.5 cursor-pointer">Last 7 Days</SelectItem>
+                  <SelectItem value="30days" className="text-[13px] font-black text-gray-900 focus:bg-gray-50 py-2.5 cursor-pointer">Last 30 Days</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Value Filter */}
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Value</span>
+            <div className="flex flex-col gap-1.5 flex-1 min-w-[90px]">
+              <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1 hidden sm:block">Value</span>
               {!isCustomAmount ? (
                 <Select 
                   value={minAmountFilter} 
@@ -288,21 +266,17 @@ export default function AdminWhatsAppLogsPage() {
                     }
                   }}
                 >
-                  <SelectTrigger 
-                    className={`w-[160px] h-10 rounded-xl text-[12px] font-bold bg-white focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-200 text-gray-600 ${
-                      minAmountFilter !== "all" 
-                        ? "border-[#006837]" 
-                        : "border-gray-200"
-                    } data-[state=open]:border-[#006837]`}
-                  >
-                    <SelectValue placeholder="Any Value" />
+                  <SelectTrigger className={`w-full h-10 rounded-xl text-[12px] font-bold bg-white focus:ring-0 focus:ring-offset-0 focus:border-[#006837] transition-all duration-200 px-3 ${
+                    minAmountFilter !== "all" ? "border-[#006837] text-[#006837]" : "border-gray-200 text-gray-600"
+                  }`}>
+                    <SelectValue placeholder="Price" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border-gray-100 bg-white shadow-xl z-[100]">
-                    <SelectItem value="all" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">Any Value</SelectItem>
-                    <SelectItem value="500" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">₹500+</SelectItem>
-                    <SelectItem value="1000" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">₹1000+</SelectItem>
-                    <SelectItem value="5000" className="text-[12px] font-bold text-gray-600 focus:bg-gray-50">₹5000+</SelectItem>
-                    <SelectItem value="custom" className="text-[12px] font-bold text-[#006837] border-t mt-1 focus:bg-green-50">Custom Amount...</SelectItem>
+                  <SelectContent className="rounded-xl border-gray-100 bg-white shadow-2xl z-[100] min-w-[150px]">
+                    <SelectItem value="all" className="text-[13px] font-black text-gray-900 focus:bg-gray-50 py-2.5 cursor-pointer">Any Price</SelectItem>
+                    <SelectItem value="500" className="text-[13px] font-black text-gray-900 focus:bg-gray-50 py-2.5 cursor-pointer">₹500+</SelectItem>
+                    <SelectItem value="1000" className="text-[13px] font-black text-gray-900 focus:bg-gray-50 py-2.5 cursor-pointer">₹1000+</SelectItem>
+                    <SelectItem value="5000" className="text-[13px] font-black text-gray-900 focus:bg-gray-50 py-2.5 cursor-pointer">₹5000+</SelectItem>
+                    <SelectItem value="custom" className="text-[13px] font-black text-[#006837] border-t border-gray-100 mt-1 py-2.5 cursor-pointer focus:bg-green-50">Custom...</SelectItem>
                   </SelectContent>
                 </Select>
               ) : (
@@ -310,7 +284,7 @@ export default function AdminWhatsAppLogsPage() {
                   <input
                     type="number"
                     autoFocus
-                    placeholder="Price"
+                    placeholder="Min"
                     value={minAmountFilter === "all" ? "" : minAmountFilter}
                     onChange={(e) => {
                       setMinAmountFilter(e.target.value || "all");
@@ -321,9 +295,9 @@ export default function AdminWhatsAppLogsPage() {
                         setIsCustomAmount(false);
                       }
                     }}
-                    className="w-[160px] h-10 rounded-xl pl-8 pr-4 text-[12px] font-bold border-[#006837] bg-white text-gray-600 focus:outline-none focus:ring-0"
+                    className="w-full h-10 rounded-xl pl-8 pr-3 text-[12px] font-black border-[#006837] bg-white text-[#006837] focus:outline-none focus:ring-4 focus:ring-[#006837]/5 transition-all"
                   />
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] font-bold text-gray-400">Rs.</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] font-black text-[#006837]">₹</span>
                 </div>
               )}
             </div>
@@ -331,7 +305,7 @@ export default function AdminWhatsAppLogsPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto custom-scrollbar">
         {loading ? (
           <div className="p-12 flex flex-col items-center justify-center space-y-4">
             <Loader2 className="h-8 w-8 text-[#006837] animate-spin" />
@@ -355,7 +329,7 @@ export default function AdminWhatsAppLogsPage() {
                 {logs.map((log) => (
                   <TableRow 
                     key={log.id} 
-                    className="group hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    className="group hover:bg-gray-50/50 transition-colors cursor-pointer whitespace-nowrap"
                     onClick={() => handleShowDetails(log)}
                   >
                     <TableCell className="text-center py-4">

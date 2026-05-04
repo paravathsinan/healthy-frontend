@@ -34,14 +34,14 @@ Please let me know the payment details and delivery time.`;
   window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
 };
 
-export const sendWhatsAppCartOrder = (cartItems: CartItem[], totalPrice: number, userDetails: { name: string; address: string; phone: string }) => {
+export const sendWhatsAppCartOrder = (cartItems: CartItem[], totalPrice: number, userDetails: { name: string; address: string; phone: string }, orderNumber?: string) => {
   const businessPhoneNumber = "918157858977"; // Updated business number
   
   const itemsText = cartItems.map((item, index) => (
     `${index + 1}. *${item.name}*\n   Size: ${item.weight}\n   Qty: ${item.quantity} x ₹${item.price} = ₹${(item.quantity * item.price).toFixed(2)}`
   )).join('\n\n');
 
-  const message = `*NEW WEBSITE ORDER*\n
+  const message = `*NEW WEBSITE ORDER*\n${orderNumber ? `*Order ID: #${orderNumber}*\n` : ''}
 --------------------------
 ${itemsText}
 --------------------------

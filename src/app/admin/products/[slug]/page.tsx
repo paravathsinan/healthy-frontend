@@ -7,6 +7,7 @@ import { Search, Plus, Package, Edit3, Trash2, ArrowLeft } from "lucide-react";
 import { ProductModal } from "@/components/admin/ProductModal";
 import { CategoryModal } from "@/components/admin/CategoryModal";
 import ProductTabs from "@/components/admin/ProductTabs";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { useRouter } from "next/navigation";
@@ -22,6 +23,8 @@ export default function DynamicCategoryProductsPage({ params }: { params: Promis
    const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
    const [category, setCategory] = useState<any | null>(null);
    const [categories, setCategories] = useState<any[]>([]);
+   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+   const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchCategoryData = async () => {
     setLoading(true);
@@ -49,14 +52,23 @@ export default function DynamicCategoryProductsPage({ params }: { params: Promis
     }
   };
 
-  const handleDeleteCategory = async () => {
-    if (!confirm("Are you sure you want to delete this category? This will not delete the products but they will become uncategorized.")) return;
+  const handleDeleteCategory = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!category) return;
+    
+    setIsDeleting(true);
     try {
       await api.delete(`/categories/${category.id}/`);
       toast.success("Category deleted successfully");
       router.push('/admin/categories');
     } catch (error) {
       toast.error("Failed to delete category");
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
     }
   };
 
@@ -180,6 +192,15 @@ export default function DynamicCategoryProductsPage({ params }: { params: Promis
           onClose={() => setIsCategoryModalOpen(false)}
           category={category}
           onSuccess={fetchCategoryData}
+        />
+
+        <DeleteConfirmDialog 
+          isOpen={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          onConfirm={handleConfirmDelete}
+          title="Delete Category?"
+          description="This action cannot be undone. This category will be permanently removed. Products in this category will become uncategorized."
+          isLoading={isDeleting}
         />
       </div>
     </div>

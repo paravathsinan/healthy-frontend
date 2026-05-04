@@ -240,7 +240,7 @@ export const Navbar = () => {
               <Image src="/logo/logo.png" alt="Logo" fill sizes="48px" className="object-contain" priority />
             </div>
           </div>
-          <CartDrawer showOnlyIcon hideBadge={true} />
+          <CartDrawer showOnlyIcon />
         </div>
 
         {/* 3. Main Desktop Header */}
@@ -260,7 +260,7 @@ export const Navbar = () => {
                 <Truck className="h-5 w-5" />
                 <span>Track Order</span>
               </Link>
-              <CartDrawer hideBadge={true} />
+              <CartDrawer />
             </div>
           </div>
         </div>

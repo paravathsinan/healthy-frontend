@@ -7,6 +7,7 @@ import { Search, Filter, Plus, Package, Loader2, Edit3, Trash2 } from "lucide-re
 import { ProductModal } from "@/components/admin/ProductModal";
 import { CategoryModal } from "@/components/admin/CategoryModal";
 import ProductTabs from "@/components/admin/ProductTabs";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { useRouter } from "next/navigation";
@@ -20,6 +21,8 @@ function ChocolateProductsContent() {
   const [category, setCategory] = useState<any | null>(null);
   const [categories, setCategories] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
 
   const fetchChocolateProducts = async () => {
@@ -49,14 +52,23 @@ function ChocolateProductsContent() {
   );
 
 
-  const handleDeleteCategory = async () => {
-    if (!confirm("Are you sure you want to delete this category? This will not delete the products but they will become uncategorized.")) return;
+  const handleDeleteCategory = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!category) return;
+    
+    setIsDeleting(true);
     try {
       await api.delete(`/categories/${category.id}/`);
       toast.success("Category deleted successfully");
       router.push('/admin/categories');
     } catch (error) {
       toast.error("Failed to delete category");
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
     }
   };
 
@@ -152,6 +164,15 @@ function ChocolateProductsContent() {
         onClose={() => setIsCategoryModalOpen(false)}
         category={category}
         onSuccess={fetchChocolateProducts}
+      />
+
+      <DeleteConfirmDialog 
+        isOpen={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        title="Delete Chocolate Category?"
+        description="This action cannot be undone. This category will be permanently removed. The products will remain but will be uncategorized."
+        isLoading={isDeleting}
       />
     </div>
   </div>

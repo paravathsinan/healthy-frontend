@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
-import { Truck, Search, Phone, Package, Calendar, CheckCircle2, Clock, MapPin, ExternalLink, ArrowLeft, Loader2, MessageSquare } from "lucide-react";
+import { Search, MapPin, Truck, CheckCircle2, Clock, Calendar, MessageSquare, Package, ChevronRight, User, Phone, ExternalLink, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/api";
@@ -30,7 +30,60 @@ const STEPS = [
   { label: 'Delivered', icon: Package },
 ];
 
+const TrackOrderSkeleton = () => (
+  <div className="space-y-8 animate-pulse mt-8">
+    {/* Main Status Skeleton */}
+    <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-black/5 border border-gray-100">
+      <div className="flex flex-col items-center text-center space-y-6 mb-12">
+        <div className="w-20 h-20 rounded-full bg-gray-100" />
+        <div className="space-y-3">
+          <div className="h-3 w-24 bg-gray-100 rounded-full mx-auto" />
+          <div className="h-8 w-48 bg-gray-100 rounded-full mx-auto" />
+        </div>
+      </div>
+      
+      <div className="hidden md:block h-1 w-full bg-gray-50 rounded-full mb-16" />
+      
+      <div className="flex flex-col md:flex-row justify-between gap-10 md:gap-4 px-4 md:px-8">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="flex md:flex-col items-center gap-4 md:gap-3">
+            <div className="w-10 h-10 rounded-full bg-gray-100 shrink-0" />
+            <div className="flex flex-col md:items-center gap-2">
+              <div className="h-2 w-20 bg-gray-100 rounded-full" />
+              <div className="h-2 w-12 bg-gray-50 rounded-full" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
 
+    {/* Grid Skeletons */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-black/5 border border-gray-100 space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="w-6 h-6 rounded-lg bg-gray-100" />
+          <div className="h-4 w-32 bg-gray-100 rounded-full" />
+        </div>
+        <div className="space-y-4 pt-2">
+          <div className="h-16 w-full bg-gray-50 rounded-2xl" />
+          <div className="h-16 w-full bg-gray-50 rounded-2xl" />
+          <div className="h-16 w-full bg-gray-50 rounded-2xl" />
+        </div>
+      </div>
+      <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-black/5 border border-gray-100 space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="w-6 h-6 rounded-lg bg-gray-100" />
+          <div className="h-4 w-32 bg-gray-100 rounded-full" />
+        </div>
+        <div className="space-y-4 pt-2">
+          <div className="h-12 w-full bg-gray-50 rounded-xl" />
+          <div className="h-12 w-full bg-gray-50 rounded-xl" />
+          <div className="h-12 w-full bg-gray-50 rounded-xl" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 function TrackOrderContent() {
   const searchParams = useSearchParams();
@@ -114,6 +167,9 @@ function TrackOrderContent() {
     const isCompleted = statusInfo.step > stepNum;
     const isCurrent = statusInfo.step === stepNum;
     
+    // Only show time if the step is reached or completed
+    if (stepNum > statusInfo.step) return null;
+
     let time = null;
     switch (stepNum) {
       case 1: time = order.created_at; break;
@@ -222,9 +278,12 @@ function TrackOrderContent() {
           </AnimatePresence>
         </div>
 
+        {/* Loading Skeleton */}
+        {loading && <TrackOrderSkeleton />}
+
         {/* Order Results */}
         <AnimatePresence>
-          {order && (
+          {!loading && order && (
             <motion.div
               ref={resultsRef}
               initial={{ opacity: 0, y: 20 }}
@@ -246,7 +305,7 @@ function TrackOrderContent() {
                 {/* Progress Visual - Desktop: Horizontal, Mobile: Vertical */}
                 <div className="relative mt-12 mb-16 px-4 md:px-12">
                   {/* Desktop Horizontal Line */}
-                  <div className="hidden md:block absolute top-1/2 left-12 right-12 h-1 bg-gray-100 -translate-y-1/2 rounded-full overflow-hidden">
+                  <div className="hidden md:block absolute top-1/2 left-24 right-24 h-1 bg-gray-100 -translate-y-1/2 rounded-full overflow-hidden">
                     <motion.div 
                       initial={{ width: 0 }}
                       animate={{ width: `${((statusInfo?.step - 1) / 4) * 100}%` }}
@@ -266,13 +325,26 @@ function TrackOrderContent() {
                       return (
                         <div key={i} className="flex flex-col items-center relative z-10 w-24">
                           <div className="relative">
-                            {/* Pulse Animation for Current Step */}
+                            {/* Ripple Animation for Current Step */}
                             {isCurrent && (
-                              <motion.div 
-                                animate={{ scale: [1, 1.2, 1], opacity: [0.6, 0, 0.6] }}
-                                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                                className="absolute inset-0 bg-[#006837]/20 rounded-full -m-1"
-                              />
+                              <div className="absolute inset-0 pointer-events-none">
+                                {[0, 1, 2].map((i) => (
+                                  <motion.div 
+                                    key={i}
+                                    animate={{ 
+                                      scale: [1, 2], 
+                                      opacity: [0.15, 0] 
+                                    }}
+                                    transition={{ 
+                                      duration: 4.5, 
+                                      repeat: Infinity, 
+                                      delay: i * 1.5,
+                                      ease: "easeOut" 
+                                    }}
+                                    className="absolute inset-0 bg-[#006837] rounded-full"
+                                  />
+                                ))}
+                              </div>
                             )}
                             
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 relative z-10 ${
@@ -302,49 +374,54 @@ function TrackOrderContent() {
                   </div>
 
                   {/* Mobile Vertical Layout */}
-                  <div className="md:hidden flex flex-col gap-10 relative">
-                    {/* Vertical Line Background - Stops at last step */}
-                    <div className="absolute left-[19px] top-4 bottom-4 w-1 bg-gray-100 rounded-full" />
-                    
-                    {/* Vertical Active Line - Stops at current step icon */}
-                    <motion.div 
-                      initial={{ height: 0 }}
-                      animate={{ height: `${((statusInfo?.step - 1) / 4) * 100}%` }}
-                      transition={{ duration: 1.5, ease: "easeOut" }}
-                      className="absolute left-[19px] top-4 w-1 bg-[#006837] rounded-full z-10 origin-top"
-                    />
-
+                  <div className="md:hidden flex flex-col gap-12 relative">
                     {STEPS.map((step, i) => {
                       const stepNum = i + 1;
                       const isCompleted = statusInfo!.step > stepNum;
                       const isCurrent = statusInfo!.step === stepNum;
                       const time = getStepTime(stepNum);
-                      
+                      const Icon = step.icon;
+
                       return (
-                        <div key={i} className="flex items-center gap-6 relative z-20">
-                          <div className="relative shrink-0">
-                            {/* Pulse Animation for Current Step */}
+                        <div key={i} className="flex gap-6 items-start relative">
+                          {/* Vertical Line Segment - ONLY if not last step */}
+                          {i < STEPS.length - 1 && (
+                            <div className={`absolute left-[19px] top-10 w-1 h-12 -mb-2 ${isCompleted ? 'bg-[#006837]' : 'bg-gray-100'} transition-colors duration-500`} />
+                          )}
+
+                          <div className="relative shrink-0 z-10">
+                            {/* Ripple Animation for Current Step */}
                             {isCurrent && (
-                              <motion.div 
-                                animate={{ scale: [1, 1.2, 1], opacity: [0.6, 0, 0.6] }}
-                                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                                className="absolute inset-0 bg-[#006837]/20 rounded-full -m-1"
-                              />
+                              <div className="absolute inset-0 pointer-events-none">
+                                {[0, 1, 2].map((i) => (
+                                  <motion.div 
+                                    key={i}
+                                    animate={{ 
+                                      scale: [1, 2], 
+                                      opacity: [0.15, 0] 
+                                    }}
+                                    transition={{ 
+                                      duration: 4.5, 
+                                      repeat: Infinity, 
+                                      delay: i * 1.5,
+                                      ease: "easeOut" 
+                                    }}
+                                    className="absolute inset-0 bg-[#006837] rounded-full"
+                                  />
+                                ))}
+                              </div>
                             )}
                             
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 relative z-10 ${
-                              isCompleted ? 'bg-[#006837] text-white' : 
-                              isCurrent ? 'bg-[#006837] ring-4 ring-[#006837]/10 text-white' : 
+                              isCompleted || isCurrent ? 'bg-[#006837] text-white shadow-lg shadow-[#006837]/20 scale-110' : 
                               'bg-white border-4 border-gray-100 text-gray-300'
                             }`}>
-                              {isCompleted ? <CheckCircle2 size={18} /> : <step.icon size={18} />}
+                              {isCompleted ? <CheckCircle2 size={18} /> : <Icon size={18} />}
                             </div>
                           </div>
 
-                          <div className="flex flex-col">
-                            <span className={`text-[12px] font-black uppercase tracking-widest transition-colors duration-500 ${
-                              isCompleted || isCurrent ? 'text-gray-900' : 'text-gray-300'
-                            }`}>
+                          <div className={`flex flex-col pt-1 transition-all duration-500 ${isCompleted || isCurrent ? 'opacity-100' : 'opacity-40'}`}>
+                            <span className="text-[12px] font-black uppercase tracking-widest text-gray-900">
                               {step.label}
                             </span>
                             {time ? (
@@ -352,19 +429,23 @@ function TrackOrderContent() {
                                 <span className="text-[10px] font-bold text-gray-400">
                                   {time}
                                 </span>
-                                {isCurrent && (
+                                {isCurrent && step.label !== 'Delivered' && (
                                   <span className="text-[9px] font-bold text-[#006837] flex items-center gap-1 mt-0.5">
                                     <span className="w-1 h-1 rounded-full bg-[#006837] animate-pulse" />
                                     In Progress
                                   </span>
                                 )}
                               </div>
-                            ) : isCurrent ? (
+                            ) : isCurrent && step.label !== 'Delivered' ? (
                               <span className="text-[10px] font-bold text-[#006837] flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-[#006837] animate-pulse" />
                                 Processing...
                               </span>
-                            ) : null}
+                            ) : (
+                                <span className="text-[10px] font-bold text-gray-300">
+                                  {stepNum <= (statusInfo?.step || 0) ? 'Completed' : 'Pending'}
+                                </span>
+                            )}
                           </div>
                         </div>
                       );
@@ -376,13 +457,14 @@ function TrackOrderContent() {
               {/* Order Details Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left: Summary */}
-                <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-black/5 border border-gray-100 space-y-8">
+                <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-black/5 border border-gray-100 space-y-6">
                   <h3 className="text-lg font-black text-gray-900 tracking-tight flex items-center gap-3">
                     <Calendar className="text-[#006837]" size={20} />
                     Order Summary
                   </h3>
                   
-                  <div className="space-y-6">
+                  <div className="space-y-5">
+                    {/* ID and Date Row */}
                     <div className="flex justify-between items-end border-b border-gray-50 pb-4">
                       <div className="space-y-1">
                         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Order ID</p>
@@ -394,7 +476,40 @@ function TrackOrderContent() {
                       </div>
                     </div>
 
-                    <div className="flex justify-between items-center">
+                    {/* Delivery Info */}
+                    <div className="flex flex-wrap gap-x-6 gap-y-6 pt-1 border-b border-gray-50 pb-8">
+                      <div className="flex items-start gap-3 min-w-[140px] flex-1">
+                        <div className="p-2 bg-gray-50 rounded-lg text-gray-400 shrink-0">
+                          <User size={14} />
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Customer</p>
+                          <p className="text-[14px] font-bold text-gray-900">{order.customer_name}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-3 min-w-[140px] flex-1 border-gray-50 sm:border-x sm:px-6">
+                        <div className="p-2 bg-gray-50 rounded-lg text-gray-400 shrink-0">
+                          <Phone size={14} />
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Contact</p>
+                          <p className="text-[14px] font-bold text-gray-900">{order.customer_phone}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 min-w-[200px] flex-[2]">
+                        <div className="p-2 bg-gray-50 rounded-lg text-gray-400 shrink-0">
+                          <MapPin size={14} />
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Location</p>
+                          <p className="text-[13px] font-medium text-gray-600 leading-relaxed">{order.customer_address}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-gray-50 flex justify-between items-center">
                       <p className="text-[15px] font-bold text-gray-500">Total Amount</p>
                       <p className="text-2xl font-black text-gray-900">Rs. {parseFloat(order.total_amount).toFixed(2)}</p>
                     </div>

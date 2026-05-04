@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Package, MapPin, Phone, User, Calendar, MessageCircle, CheckCircle2, Clock, AlertCircle, Truck, CreditCard, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/api";
@@ -24,13 +24,23 @@ const statuses = [
 export function OrderDetailsModal({ order, isOpen, onClose, onUpdate }: OrderDetailsModalProps) {
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [localOrder, setLocalOrder] = useState<any>(null);
 
-  if (!order) return null;
+  // Sync with prop changes when modal opens or order changes
+  useEffect(() => {
+    if (order) {
+      setLocalOrder(order);
+    }
+  }, [order]);
+
+  if (!localOrder) return null;
 
   const handleUpdateStatus = async (newStatus: string) => {
     setLoading(true);
     try {
-      await api.patch(`/orders/${order.id}/`, { status: newStatus });
+      await api.patch(`/orders/${localOrder.id}/`, { status: newStatus });
+      // Update local state immediately for instant UI feedback
+      setLocalOrder({ ...localOrder, status: newStatus });
       toast.success(`Order marked as ${newStatus.toLowerCase()}`);
       if (onUpdate) onUpdate();
     } catch (error) {
@@ -39,6 +49,8 @@ export function OrderDetailsModal({ order, isOpen, onClose, onUpdate }: OrderDet
       setLoading(false);
     }
   };
+
+  const currentStatus = statuses.find(s => s.id === localOrder.status) || statuses[0];
 
   return (
     <AnimatePresence>
@@ -62,12 +74,12 @@ export function OrderDetailsModal({ order, isOpen, onClose, onUpdate }: OrderDet
               <div>
                 <div className="flex items-center gap-3">
                   <h2 className="text-2xl font-black text-gray-900 font-heading">Order Details</h2>
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${statuses.find(s => s.id === order.status)?.bg} ${statuses.find(s => s.id === order.status)?.color} ${statuses.find(s => s.id === order.status)?.border}`}>
-                    {order.status}
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${currentStatus.bg} ${currentStatus.color} ${currentStatus.border}`}>
+                    {localOrder.status}
                   </span>
                 </div>
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                  {order.order_number || `ORD-${order.id}`} • {new Date(order.created_at).toLocaleString()}
+                  {localOrder.order_number || `ORD-${localOrder.id}`} • {new Date(localOrder.created_at).toLocaleString()}
                 </p>
               </div>
               <button onClick={onClose} className="p-2 hover:bg-white rounded-full transition-colors shadow-sm">
@@ -86,7 +98,7 @@ export function OrderDetailsModal({ order, isOpen, onClose, onUpdate }: OrderDet
                 <div className="flex flex-wrap gap-2">
                   {statuses.map((status) => {
                     const Icon = status.icon;
-                    const isActive = order.status === status.id;
+                    const isActive = localOrder.status === status.id;
                     return (
                       <button
                         key={status.id}
@@ -113,14 +125,14 @@ export function OrderDetailsModal({ order, isOpen, onClose, onUpdate }: OrderDet
                     <User size={16} />
                     <span className="text-[10px] font-bold uppercase tracking-widest">Customer</span>
                   </div>
-                  <p className="text-lg font-bold text-gray-900">{order.customer_name}</p>
+                  <p className="text-lg font-bold text-gray-900">{localOrder.customer_name}</p>
                 </div>
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 text-gray-400">
                     <Phone size={16} />
                     <span className="text-[10px] font-bold uppercase tracking-widest">WhatsApp</span>
                   </div>
-                  <p className="text-lg font-bold text-gray-900">{order.customer_phone}</p>
+                  <p className="text-lg font-bold text-gray-900">{localOrder.customer_phone}</p>
                 </div>
                 <div className="space-y-4 md:col-span-2">
                   <div className="flex items-center gap-3 text-gray-400">
@@ -128,7 +140,7 @@ export function OrderDetailsModal({ order, isOpen, onClose, onUpdate }: OrderDet
                     <span className="text-[10px] font-bold uppercase tracking-widest">Delivery Address</span>
                   </div>
                   <p className="text-sm font-medium text-gray-600 leading-relaxed bg-gray-50/50 p-6 rounded-[2rem] border border-gray-100">
-                    {order.customer_address}
+                    {localOrder.customer_address}
                   </p>
                 </div>
               </div>
@@ -141,12 +153,12 @@ export function OrderDetailsModal({ order, isOpen, onClose, onUpdate }: OrderDet
                     <span className="text-[10px] font-bold uppercase tracking-widest">Items Ordered</span>
                   </div>
                   <span className="text-[10px] font-black text-[#006837] bg-[#006837]/10 px-3 py-1 rounded-full uppercase tracking-wider">
-                    {order.items?.length || 0} Products
+                    {localOrder.items?.length || 0} Products
                   </span>
                 </div>
                 
                 <div className="grid grid-cols-1 gap-3">
-                  {order.items?.map((item: any, i: number) => (
+                  {localOrder.items?.map((item: any, i: number) => (
                     <div key={i} className="flex justify-between items-center p-5 bg-white rounded-2xl border border-gray-100 hover:border-gray-200 transition-colors">
                       <div className="space-y-1">
                         <p className="font-bold text-gray-900">{item.product_name}</p>
@@ -164,7 +176,7 @@ export function OrderDetailsModal({ order, isOpen, onClose, onUpdate }: OrderDet
               <div className="flex items-center gap-4 flex-1">
                 <div>
                   <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Order Amount</p>
-                  <p className="text-2xl md:text-3xl font-black text-gray-900 font-heading tracking-tighter">₹{order.total_amount}</p>
+                  <p className="text-2xl md:text-3xl font-black text-gray-900 font-heading tracking-tighter">₹{localOrder.total_amount}</p>
                 </div>
               </div>
 
@@ -174,7 +186,7 @@ export function OrderDetailsModal({ order, isOpen, onClose, onUpdate }: OrderDet
                     if (confirmDelete) {
                       setLoading(true);
                       try {
-                        await api.delete(`/orders/${order.id}/`);
+                        await api.delete(`/orders/${localOrder.id}/`);
                         toast.success("Order deleted successfully");
                         onClose();
                         if (onUpdate) onUpdate();
@@ -199,7 +211,7 @@ export function OrderDetailsModal({ order, isOpen, onClose, onUpdate }: OrderDet
                 </button>
 
                 <button 
-                  onClick={() => window.open(`https://wa.me/${order.customer_phone.replace(/[^0-9]/g, '')}`, '_blank')}
+                  onClick={() => window.open(`https://wa.me/${localOrder.customer_phone.replace(/[^0-9]/g, '')}`, '_blank')}
                   className="bg-[#006837] text-white px-6 md:px-10 py-3.5 md:py-4 rounded-2xl md:rounded-full text-xs md:text-sm font-bold hover:bg-black transition-all shadow-lg shadow-[#006837]/20 flex items-center justify-center gap-3 active:scale-95"
                 >
                   <Phone size={16} className="md:size-[18px]" />

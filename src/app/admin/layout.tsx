@@ -117,12 +117,12 @@ export default function AdminLayout({
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-[40] w-56 bg-white border-r border-gray-100 flex flex-col transition-transform duration-300 transform
+        fixed inset-y-0 left-0 z-[40] w-72 bg-white border-r border-gray-100 flex flex-col transition-transform duration-300 transform
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <div className="p-6 flex items-center justify-between">
-          <div onClick={handleLogoClick} className="flex items-center gap-2.5 group cursor-pointer">
-            <div className="relative w-8 h-8 transition-transform duration-300 group-hover:scale-110">
+        <div className="p-6 flex items-center justify-between gap-4">
+          <div onClick={handleLogoClick} className="flex items-center gap-2.5 group cursor-pointer min-w-0">
+            <div className="relative w-8 h-8 transition-transform duration-300 group-hover:scale-110 shrink-0">
               <Image 
                 src="/logo/logo.png" 
                 alt="Logo" 
@@ -131,15 +131,15 @@ export default function AdminLayout({
                 className="object-contain"
               />
             </div>
-            <span className="text-lg font-black tracking-tighter text-gray-900 font-heading whitespace-nowrap">
+            <span className="text-lg font-black tracking-tighter text-gray-900 font-heading whitespace-nowrap truncate">
               Healthy Manager
             </span>
           </div>
           <button 
             onClick={() => setIsSidebarOpen(false)}
-            className="lg:hidden p-2 text-gray-400 hover:text-black transition-colors"
+            className="lg:hidden p-2 text-gray-400 hover:text-black transition-colors shrink-0"
           >
-            <X size={20} />
+            <X size={22} />
           </button>
         </div>
         
@@ -187,7 +187,7 @@ export default function AdminLayout({
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 min-h-screen lg:ml-56 transition-all duration-300 w-full max-w-full overflow-x-hidden">
+      <main className="flex-1 min-h-screen lg:ml-72 transition-all duration-300 w-full max-w-full overflow-x-hidden">
         <header className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <button 

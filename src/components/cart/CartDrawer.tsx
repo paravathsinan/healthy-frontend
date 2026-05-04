@@ -12,6 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { createOrder } from "@/lib/api";
+import { toast } from "sonner";
 
 /**
  * Shared Content for both Desktop and Mobile drawers
@@ -89,15 +90,33 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
                 <div className="space-y-5">
                   <div className="space-y-2">
                     <label className="text-[13px] font-bold text-gray-700 uppercase">Full Name</label>
-                    <input type="text" value={customerDetails.name} onChange={(e) => setCustomerDetails({...customerDetails, name: e.target.value})} placeholder="Enter your name" className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl" />
+                    <input 
+                      type="text" 
+                      value={customerDetails.name} 
+                      onChange={(e) => setCustomerDetails({...customerDetails, name: e.target.value})} 
+                      placeholder="Enter your name" 
+                      className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium placeholder:text-gray-500 placeholder:font-normal focus:bg-white focus:border-[#006837] outline-none transition-all" 
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[13px] font-bold text-gray-700 uppercase">WhatsApp Number</label>
-                    <input type="tel" value={customerDetails.phone} onChange={(e) => setCustomerDetails({...customerDetails, phone: e.target.value})} placeholder="Enter your WhatsApp number" className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl" />
+                    <input 
+                      type="tel" 
+                      value={customerDetails.phone} 
+                      onChange={(e) => setCustomerDetails({...customerDetails, phone: e.target.value})} 
+                      placeholder="Enter your WhatsApp number" 
+                      className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium placeholder:text-gray-500 placeholder:font-normal focus:bg-white focus:border-[#006837] outline-none transition-all" 
+                    />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-gray-700 uppercase">Delivery Address</label>
-                    <textarea value={customerDetails.address} onChange={(e) => setCustomerDetails({...customerDetails, address: e.target.value})} placeholder="Enter your full address" rows={3} className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl resize-none" />
+                    <label className="text-[13px] font-bold text-gray-700 uppercase">Location</label>
+                    <textarea 
+                      value={customerDetails.address} 
+                      onChange={(e) => setCustomerDetails({...customerDetails, address: e.target.value})} 
+                      placeholder="Enter your location" 
+                      rows={3} 
+                      className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium placeholder:text-gray-500 placeholder:font-normal focus:bg-white focus:border-[#006837] outline-none transition-all resize-none" 
+                    />
                   </div>
                 </div>
               </div>
@@ -118,11 +137,11 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
                   }
                   setIsOrdering(true);
                   try {
-                    await createOrder({
+                    const response = await createOrder({
                       customer_name: customerDetails.name,
                       customer_phone: customerDetails.phone,
                       customer_address: customerDetails.address,
-                      total_amount: total,
+                      total_amount: parseFloat(total.toFixed(2)),
                       items: items.map(item => ({
                         product: item.productId,
                         variant: item.variantId,
@@ -132,8 +151,27 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
                         price: item.price
                       }))
                     });
-                    sendWhatsAppCartOrder(items, total, customerDetails);
-                  } catch (e) { alert("Failed to place order."); }
+                    sendWhatsAppCartOrder(items, total, customerDetails, response.order_number);
+                  } catch (e: any) { 
+                    console.error("Checkout Error:", e);
+                    const errorData = e.response?.data;
+                    let errorMessage = "Failed to place order. Please try again.";
+                    
+                    if (errorData) {
+                      if (typeof errorData === 'object') {
+                        errorMessage = Object.values(errorData).flat().join(", ");
+                      } else {
+                        errorMessage = String(errorData);
+                      }
+                    } else if (e.message) {
+                      errorMessage = e.message;
+                    }
+                    
+                    toast.error(errorMessage, {
+                      duration: 5000,
+                      className: "rounded-2xl font-bold border-red-100 bg-red-50 text-red-600"
+                    });
+                  }
                   finally { setIsOrdering(false); }
                 }}
               >
@@ -186,7 +224,7 @@ export function CartDrawer({ showOnlyIcon = false, hideBadge = false }: { showOn
  */
 export function GlobalMobileCart() {
   const { isCartOpen, openCart, closeCart, preferredSnapPoint, cartType, setPreferredSnapPoint } = useCartStore();
-  const [activeSnap, setActiveSnap] = useState<number | string | null>(0.6);
+  const [activeSnap, setActiveSnap] = useState<number | string | null>(1);
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -200,9 +238,9 @@ export function GlobalMobileCart() {
 
   useEffect(() => {
     if (isCartOpen && cartType === 'drawer') {
-      setActiveSnap(preferredSnapPoint);
+      setActiveSnap(1);
     }
-  }, [isCartOpen, preferredSnapPoint, cartType]);
+  }, [isCartOpen, cartType]);
 
   if (!mounted) return null;
 
@@ -212,7 +250,7 @@ export function GlobalMobileCart() {
   if (showSheet) {
     return (
       <Sheet open={isCartOpen} onOpenChange={(open) => open ? openCart(1, 'sheet') : closeCart()}>
-        <SheetContent side="right" className="w-full sm:max-w-[540px] p-0 border-none bg-white z-[200]">
+        <SheetContent side="right" hideClose className="w-full sm:max-w-[540px] p-0 border-none bg-white z-[200]">
           <SheetHeader className="sr-only">
             <SheetTitle>Shopping Cart</SheetTitle>
             <SheetDescription>Review your items and complete your order.</SheetDescription>
@@ -228,14 +266,11 @@ export function GlobalMobileCart() {
   return (
     <DrawerRoot 
       open={isCartOpen} 
-      onOpenChange={(open: boolean) => open ? openCart(preferredSnapPoint, 'drawer') : closeCart()}
+      onOpenChange={(open: boolean) => open ? openCart(1, 'drawer') : closeCart()}
       shouldScaleBackground={false}
-      snapPoints={[0.6, 1]}
+      snapPoints={[1]}
       activeSnapPoint={activeSnap}
-      onSnapPointChange={(val: any) => {
-        setActiveSnap(val);
-        setPreferredSnapPoint(val);
-      }}
+      onSnapPointChange={setActiveSnap}
     >
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40 z-[100]" />

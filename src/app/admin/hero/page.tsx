@@ -7,12 +7,15 @@ import { getHeroSlides } from "@/lib/api";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { HeroSlideModal } from "@/components/admin/HeroSlideModal";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 
 export default function HeroSlidesPage() {
   const [slides, setSlides] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSlide, setSelectedSlide] = useState<any>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [slideToDelete, setSlideToDelete] = useState<number | null>(null);
 
   const fetchSlides = async () => {
     try {
@@ -30,14 +33,25 @@ export default function HeroSlidesPage() {
     fetchSlides();
   }, []);
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this slide?")) return;
+  const handleDelete = (id: number) => {
+    setSlideToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (slideToDelete === null) return;
+    
     try {
-      await api.delete(`/heroslides/${id}/`);
+      setLoading(true);
+      await api.delete(`/heroslides/${slideToDelete}/`);
       toast.success("Slide deleted successfully");
       fetchSlides();
     } catch (error) {
       toast.error("Failed to delete slide");
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setSlideToDelete(null);
+      setLoading(false);
     }
   };
 
@@ -154,6 +168,15 @@ export default function HeroSlidesPage() {
         onClose={() => setIsModalOpen(false)}
         slide={selectedSlide}
         onSuccess={fetchSlides}
+      />
+
+      <DeleteConfirmDialog 
+        isOpen={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        title="Delete Hero Slide?"
+        description="This action cannot be undone. This slide will be permanently removed from your homepage carousel."
+        isLoading={loading}
       />
     </div>
   );
