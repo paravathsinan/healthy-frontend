@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { motion, AnimatePresence } from "framer-motion";
 import { getCategories } from "@/lib/api";
+import { SearchBox } from "./SearchBox";
 
 
 const STATIC_NAV_LINKS = [
@@ -242,10 +243,7 @@ export const Navbar = () => {
               </div>
             </div>
             <div className="flex-1 flex items-center justify-end gap-4">
-              <div className="flex-1 max-w-xl relative group">
-                <input type="text" placeholder="Search for..." className="w-full bg-[#F9F9F9] border border-gray-300 rounded-full py-3.5 pl-14 pr-6 text-gray-900 placeholder:text-gray-500 outline-none focus:ring-4 focus:ring-[#006837]/5 focus:border-[#006837] shadow-sm" />
-                <Search className="absolute left-5 top-4 h-6 w-6 text-gray-400 group-focus-within:text-[#006837]" />
-              </div>
+              <SearchBox />
               <Link href="/track-order" className="flex items-center gap-3 px-8 py-3.5 border border-gray-300 rounded-full text-gray-900 hover:bg-gray-50 transition-all">
                 <Truck className="h-5 w-5" />
                 <span>Track Order</span>
@@ -256,11 +254,12 @@ export const Navbar = () => {
         </div>
 
         {/* 4. Mobile Search Row (Relative) */}
-        <div className="md:hidden px-6 py-3 border-b border-gray-50">
-          <div className="relative group w-full">
-            <input type="text" placeholder="Search for..." className="w-full bg-[#F9F9F9] border border-gray-300 rounded-full py-2.5 pl-12 pr-6 text-sm text-gray-900 placeholder:text-gray-500 outline-none" />
-            <Search className="absolute left-4 top-2.5 h-5 w-5 text-gray-400" />
-          </div>
+        <div className="md:hidden px-6 py-3 border-b border-gray-50 flex items-center gap-2">
+          <SearchBox isMobile />
+          <Link href="/track-order" className="flex items-center gap-1.5 px-3.5 py-2.5 border border-gray-300 rounded-full text-gray-900 bg-white shadow-sm shrink-0">
+            <Truck className="h-4 w-4 text-[#006837]" />
+            <span className="text-[12px] font-bold">Track Order</span>
+          </Link>
         </div>
 
         {/* 5. Desktop Navigation Row */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { getProducts, getCategories } from "@/lib/api";
+import { getAdminProducts, getCategories } from "@/lib/api";
 import AdminProductTable from "@/components/admin/ProductTable";
 import { Search, Filter, Plus, Package, Loader2, X, Layers, Tag, EyeOff, CheckCircle2, IndianRupee, Calendar, Clock, AlertCircle, Eye } from "lucide-react";
 import { ProductModal } from "@/components/admin/ProductModal";
@@ -49,7 +49,7 @@ function ProductsContent() {
       if (categorySlug) {
         params.category__slug = categorySlug;
       }
-      const data = await getProducts(params);
+      const data = await getAdminProducts(params);
       setProducts(data);
 
       const categoriesData = await getCategories();
@@ -94,7 +94,7 @@ function ProductsContent() {
     // Price match
     let matchesPrice = true;
     if (priceFilter !== "all") {
-      const price = parseFloat(product.cheapest_variant_price || 0);
+      const price = parseFloat(product.base_price || product.admin_price || 0);
       if (priceFilter === "under_500") matchesPrice = price < 500;
       else if (priceFilter === "500_1000") matchesPrice = price >= 500 && price <= 1000;
       else if (priceFilter === "1000_2000") matchesPrice = price > 1000 && price <= 2000;
@@ -217,7 +217,7 @@ function ProductsContent() {
           }`}
         >
           <div className="overflow-hidden">
-            <div className="flex flex-wrap items-end gap-6 p-6 bg-gray-50/30 rounded-2xl border border-gray-100">
+            <div className="grid grid-cols-2 lg:grid-cols-4 items-end gap-4 md:gap-6 p-6 bg-gray-50/30 rounded-2xl border border-gray-100">
               {/* Category Filter */}
               <div className="flex flex-col gap-2">
                 <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Category</span>
@@ -226,7 +226,7 @@ function ProductsContent() {
                   if (val === "all") router.push('/admin/products', { scroll: false });
                   else router.push(`/admin/products?category=${val}`, { scroll: false });
                 }}>
-                  <SelectTrigger className={`w-[180px] h-10 rounded-xl text-[12px] font-bold bg-white focus:ring-0 focus:ring-offset-0 transition-all duration-200 text-gray-600 data-[state=open]:border-[#006837] ${
+                  <SelectTrigger className={`w-full h-10 rounded-xl text-[12px] font-bold bg-white focus:ring-0 focus:ring-offset-0 transition-all duration-200 text-gray-600 data-[state=open]:border-[#006837] ${
                     activeCategory !== "all" ? "border-[#006837]" : "border-gray-200"
                   }`}>
                     <SelectValue placeholder="All Categories" />
@@ -248,7 +248,7 @@ function ProductsContent() {
               <div className="flex flex-col gap-2">
                 <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Status</span>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className={`w-[160px] h-10 rounded-xl text-[12px] font-bold bg-white focus:ring-0 focus:ring-offset-0 transition-all duration-200 text-gray-600 data-[state=open]:border-[#006837] ${
+                  <SelectTrigger className={`w-full h-10 rounded-xl text-[12px] font-bold bg-white focus:ring-0 focus:ring-offset-0 transition-all duration-200 text-gray-600 data-[state=open]:border-[#006837] ${
                     statusFilter !== "all" ? "border-[#006837]" : "border-gray-200"
                   }`}>
                     <SelectValue placeholder="All Status" />
@@ -274,7 +274,7 @@ function ProductsContent() {
               <div className="flex flex-col gap-2">
                 <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Price</span>
                 <Select value={priceFilter} onValueChange={setPriceFilter}>
-                  <SelectTrigger className={`w-[160px] h-10 rounded-xl text-[12px] font-bold bg-white focus:ring-0 focus:ring-offset-0 transition-all duration-200 text-gray-600 data-[state=open]:border-[#006837] ${
+                  <SelectTrigger className={`w-full h-10 rounded-xl text-[12px] font-bold bg-white focus:ring-0 focus:ring-offset-0 transition-all duration-200 text-gray-600 data-[state=open]:border-[#006837] ${
                     priceFilter !== "all" ? "border-[#006837]" : "border-gray-200"
                   }`}>
                     <SelectValue placeholder="Any Price" />
@@ -293,7 +293,7 @@ function ProductsContent() {
               <div className="flex flex-col gap-2">
                 <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Updated</span>
                 <Select value={dateFilter} onValueChange={setDateFilter}>
-                  <SelectTrigger className={`w-[150px] h-10 rounded-xl text-[12px] font-bold bg-white focus:ring-0 focus:ring-offset-0 transition-all duration-200 text-gray-600 data-[state=open]:border-[#006837] ${
+                  <SelectTrigger className={`w-full h-10 rounded-xl text-[12px] font-bold bg-white focus:ring-0 focus:ring-offset-0 transition-all duration-200 text-gray-600 data-[state=open]:border-[#006837] ${
                     dateFilter !== "all" ? "border-[#006837]" : "border-gray-200"
                   }`}>
                     <SelectValue placeholder="All Time" />

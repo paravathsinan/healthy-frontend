@@ -18,13 +18,36 @@ import { toast } from "sonner";
  * Shared Content for both Desktop and Mobile drawers
  */
 function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (val: any) => {} }: { isSheet?: boolean, activeSnap?: any, setActiveSnap?: any }) {
-  const { items, removeItem, updateQuantity, totalPrice, customerDetails, setCustomerDetails, closeCart } = useCartStore();
+  const { items, removeItem, updateQuantity, totalPrice, customerDetails, setCustomerDetails, closeCart, clearCart } = useCartStore();
   const total = typeof totalPrice === 'function' ? totalPrice() : 0;
   const [isOrdering, setIsOrdering] = useState(false);
+  const [snapBeforeKeyboard, setSnapBeforeKeyboard] = useState<any>(null);
+
+  // When cart becomes empty (e.g. last item deleted), snap drawer to 60% height
+  useEffect(() => {
+    if (!isSheet && items.length === 0) {
+      setActiveSnap(0.6);
+    }
+  }, [items.length, isSheet]);
+
+  // Lock drawer at full height when mobile keyboard appears
+  const handleInputFocus = () => {
+    if (!isSheet) {
+      setSnapBeforeKeyboard(activeSnap);
+      setActiveSnap(1);
+    }
+  };
+
+  const handleInputBlur = () => {
+    if (!isSheet && snapBeforeKeyboard !== null) {
+      setActiveSnap(snapBeforeKeyboard);
+      setSnapBeforeKeyboard(null);
+    }
+  };
 
   return (
-    <div className={`flex flex-col ${isSheet ? "h-full" : (activeSnap === 0.6 ? "min-h-[58vh]" : "h-full")} bg-white overflow-hidden w-full`}>
-      <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between shrink-0">
+    <div className={`flex flex-col ${isSheet ? "h-full" : (items.length === 0 ? "min-h-[58vh]" : "h-full")} bg-white overflow-hidden w-full`}>
+      <div className="px-6 md:px-8 py-6 border-b border-gray-100 flex items-center justify-between shrink-0">
         <h3 className="text-[20px] font-black text-gray-900 leading-none">
           Shopping Cart ({items.length})
         </h3>
@@ -37,7 +60,7 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {items.length === 0 ? (
-          <div className="px-8 pt-12 space-y-8 flex-1">
+          <div className="px-6 md:px-8 pt-12 space-y-8 flex-1">
             <p className="text-[17px] text-gray-900 font-medium">Your cart is currently empty.</p>
             <Link href="/products" className="w-full max-w-[320px]" onClick={closeCart}>
               <button className="w-full bg-[#1A1A1A] text-white py-4 rounded-full font-bold text-[17px]">
@@ -47,11 +70,11 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto px-8 py-6 space-y-12 touch-pan-y">
+            <div className="flex-1 overflow-y-auto px-6 md:px-8 py-6 space-y-12 touch-pan-y">
               <div className="space-y-8">
                 {items.map((item) => (
-                  <div key={item.id} className="flex gap-6 items-start">
-                    <div className="relative h-24 w-24 bg-white rounded-xl overflow-hidden shrink-0 border border-gray-100 shadow-sm">
+                  <div key={item.id} className="flex gap-4 md:gap-6 items-start">
+                    <div className="relative h-20 w-20 md:h-24 md:w-24 bg-white rounded-xl overflow-hidden shrink-0 border border-gray-100 shadow-sm">
                       {item.image ? (
                         <Image src={item.image} alt={item.name} fill sizes="96px" className="object-contain p-2" />
                       ) : (
@@ -68,17 +91,17 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
                         </button>
                       </div>
                       <p className="text-[14px] text-gray-600 font-medium">{item.weight}</p>
-                      <div className="flex items-center justify-between pt-3">
-                        <div className="flex items-center border border-gray-300 rounded-full p-1 min-w-[110px] justify-between">
-                          <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="p-2 hover:bg-gray-100 rounded-full">
-                            <Minus className="h-4 w-4 text-gray-900" />
+                      <div className="flex items-center justify-between pt-3 gap-2">
+                        <div className="flex items-center border border-gray-300 rounded-full p-0.5 md:p-1 min-w-[90px] md:min-w-[110px] justify-between">
+                          <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="p-1.5 md:p-2 hover:bg-gray-100 rounded-full">
+                            <Minus className="h-3.5 w-3.5 md:h-4 md:w-4 text-gray-900" />
                           </button>
-                          <span className="text-[15px] font-black text-gray-900">{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="p-2 hover:bg-gray-100 rounded-full">
-                            <Plus className="h-4 w-4 text-gray-900" />
+                          <span className="text-[14px] md:text-[15px] font-black text-gray-900">{item.quantity}</span>
+                          <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="p-1.5 md:p-2 hover:bg-gray-100 rounded-full">
+                            <Plus className="h-3.5 w-3.5 md:h-4 md:w-4 text-gray-900" />
                           </button>
                         </div>
-                        <span className="text-[17px] font-black text-gray-900">Rs. {(item.price * item.quantity).toFixed(2)}</span>
+                        <span className="text-[16px] md:text-[17px] font-black text-gray-900 whitespace-nowrap text-right">Rs. {(item.price * item.quantity).toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
@@ -95,6 +118,8 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
                       value={customerDetails.name} 
                       onChange={(e) => setCustomerDetails({...customerDetails, name: e.target.value})} 
                       placeholder="Enter your name" 
+                      onFocus={handleInputFocus}
+                      onBlur={handleInputBlur}
                       className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium placeholder:text-gray-500 placeholder:font-normal focus:bg-white focus:border-[#006837] outline-none transition-all" 
                     />
                   </div>
@@ -105,6 +130,8 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
                       value={customerDetails.phone} 
                       onChange={(e) => setCustomerDetails({...customerDetails, phone: e.target.value})} 
                       placeholder="Enter your WhatsApp number" 
+                      onFocus={handleInputFocus}
+                      onBlur={handleInputBlur}
                       className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium placeholder:text-gray-500 placeholder:font-normal focus:bg-white focus:border-[#006837] outline-none transition-all" 
                     />
                   </div>
@@ -115,6 +142,8 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
                       onChange={(e) => setCustomerDetails({...customerDetails, address: e.target.value})} 
                       placeholder="Enter your location" 
                       rows={3} 
+                      onFocus={handleInputFocus}
+                      onBlur={handleInputBlur}
                       className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium placeholder:text-gray-500 placeholder:font-normal focus:bg-white focus:border-[#006837] outline-none transition-all resize-none" 
                     />
                   </div>
@@ -122,7 +151,7 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
               </div>
             </div>
 
-            <div className="px-6 py-6 pb-12 bg-white border-t border-gray-100 space-y-5 shadow-[0_-20px_30px_rgba(0,0,0,0.02)]">
+            <div className="px-5 md:px-6 py-6 pb-12 bg-white border-t border-gray-100 space-y-5 shadow-[0_-20px_30px_rgba(0,0,0,0.02)]">
               <div className="flex justify-between items-center px-1">
                 <span className="text-[15px] text-gray-500 font-bold">Subtotal</span>
                 <span className="text-[20px] font-black text-gray-900">Rs. {total.toFixed(2)} INR</span>
@@ -152,6 +181,7 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
                       }))
                     });
                     sendWhatsAppCartOrder(items, total, customerDetails, response.order_number);
+                    clearCart();
                   } catch (e: any) { 
                     console.error("Checkout Error:", e);
                     const errorData = e.response?.data;
@@ -236,11 +266,14 @@ export function GlobalMobileCart() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  const { items } = useCartStore();
+
   useEffect(() => {
     if (isCartOpen && cartType === 'drawer') {
-      setActiveSnap(1);
+      // Use 60% height for empty cart, full height when there are items
+      setActiveSnap(items.length === 0 ? 0.6 : 1);
     }
-  }, [isCartOpen, cartType]);
+  }, [isCartOpen, cartType, items.length]);
 
   if (!mounted) return null;
 
@@ -268,13 +301,13 @@ export function GlobalMobileCart() {
       open={isCartOpen} 
       onOpenChange={(open: boolean) => open ? openCart(1, 'drawer') : closeCart()}
       shouldScaleBackground={false}
-      snapPoints={[1]}
+      snapPoints={[0.6, 1]}
       activeSnapPoint={activeSnap}
       onSnapPointChange={setActiveSnap}
     >
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40 z-[100]" />
-        <Drawer.Content className="bg-white flex flex-col rounded-t-[32px] fixed bottom-0 left-0 right-0 z-[101] outline-none shadow-2xl max-h-[96vh]">
+        <Drawer.Content className={`bg-white flex flex-col rounded-t-[32px] fixed bottom-0 left-0 right-0 z-[101] outline-none shadow-2xl max-h-[96vh] ${items.length === 0 ? 'min-h-[60vh]' : ''}`}>
           <Drawer.Title className="sr-only">Shopping Cart</Drawer.Title>
           <Drawer.Description className="sr-only">Review your items and complete your order.</Drawer.Description>
           <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-gray-200 my-4" />

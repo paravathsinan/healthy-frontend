@@ -10,30 +10,8 @@ export const metadata = {
   description: "Browse our entire collection of premium dates, nuts, and gourmet treats.",
 };
 
-const allMockProducts = [
-  { id: 1, name: 'Medjoul King Dates', price: '593.00', image: '/images/products/medjool-dates.png', discount: 'UPTO 6% OFF' },
-  { id: 2, name: 'Ajwa Dates Premium', price: '493.00', image: '/images/products/ajwa-dates-premium.png', discount: 'UPTO 15% OFF', is_sold_out: true },
-  { id: 101, name: 'Premium California Almonds', price: '850.00', image: '/images/products/almonds.png', discount: 'UPTO 12% OFF' },
-  { id: 102, name: 'Roasted Cashew Nuts', price: '920.00', image: '/images/products/cashews.png', is_sold_out: true },
-  { id: 201, name: 'Dried Apricots', price: '450.00', image: '/images/products/apricots.png' },
-  { id: 4, name: 'Mabroom Dates Premium', price: '645.00', image: '/images/products/mabroom-dates.png', discount: 'UPTO 10% OFF' },
-];
-
 export default async function AllProductsPage() {
   let products = await getProducts().catch(() => []);
-
-  // Use mock data if API returns nothing
-  if (products.length === 0) {
-    products = allMockProducts.map(d => ({
-      ...d,
-      slug: d.name.toLowerCase().replace(/ /g, '-'),
-      cheapest_variant_price: d.price,
-      primary_image: d.image,
-      on_sale: !!d.discount,
-      variants: [],
-      images: []
-    }));
-  }
 
   // Sanitize products data to reduce page size
   const sanitizedProducts = products.map((p: any) => ({

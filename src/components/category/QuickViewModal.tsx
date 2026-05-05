@@ -16,10 +16,10 @@ interface QuickViewModalProps {
 export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps) => {
   const [quantity, setQuantity] = useState(1);
   
-  // Sort variants by price (smallest to largest)
-  const sortedVariants = [...(product.variants || [])].sort((a, b) => a.price - b.price);
+  // Sort variants by price descending (largest weight first like reference: 1000G, 500G, 250G)
+  const sortedVariants = [...(product.variants || [])].sort((a, b) => b.price - a.price);
   
-  const [selectedSize, setSelectedSize] = useState(sortedVariants[0]?.weight || '250 G');
+  const [selectedVariant, setSelectedVariant] = useState(sortedVariants[0] || null);
   const [isAdding, setIsAdding] = useState(false);
   const [isBuyingNow, setIsBuyingNow] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -29,29 +29,33 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
     ? product.images.map((img: any) => img.image_url)
     : [product.primary_image || '/images/placeholder.png'];
 
-  // Find the selected variant price
-  const currentVariant = product.variants?.find((v: any) => 
-    v.weight.toLowerCase().replace(' ', '') === selectedSize.toLowerCase().replace(' ', '')
-  ) || { price: product.cheapest_variant_price, discount_price: null };
+  // Update selected variant if product changes or variants load
+  useEffect(() => {
+    if (sortedVariants.length > 0 && !selectedVariant) {
+      setSelectedVariant(sortedVariants[0]);
+    }
+  }, [product, sortedVariants]);
 
-  const unitPrice = parseFloat(currentVariant.price || product.cheapest_variant_price);
-  const originalPrice = currentVariant.discount_price ? parseFloat(currentVariant.discount_price) : null;
+  const unitPrice = parseFloat(selectedVariant?.price || product.cheapest_variant_price || 0);
+  const originalPrice = selectedVariant?.discount_price ? parseFloat(selectedVariant.discount_price) : null;
   const totalPrice = unitPrice * quantity;
+  const totalOriginalPrice = originalPrice ? originalPrice * quantity : null;
+  const savings = totalOriginalPrice ? totalOriginalPrice - totalPrice : null;
 
   const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % productImages.length);
   const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + productImages.length) % productImages.length);
 
   const handleAddToCart = async () => {
-    if (isAdding || isBuyingNow) return;
+    if (isAdding || isBuyingNow || !selectedVariant) return;
     setIsAdding(true);
     await new Promise(resolve => setTimeout(resolve, 600));
     addItem({
-      id: `${product.id}-${selectedSize}`,
+      id: `${product.id}-${selectedVariant.id}`,
       productId: product.id,
-      variantId: currentVariant.id,
+      variantId: selectedVariant.id,
       name: product.name,
       price: unitPrice,
-      weight: selectedSize,
+      weight: selectedVariant.weight,
       quantity: quantity,
       image: productImages[0]
     });
@@ -60,15 +64,15 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
   };
 
   const handleBuyNow = async () => {
-    if (isAdding || isBuyingNow) return;
+    if (isAdding || isBuyingNow || !selectedVariant) return;
     setIsBuyingNow(true);
     addItem({
-      id: `${product.id}-${selectedSize}`,
+      id: `${product.id}-${selectedVariant.id}`,
       productId: product.id,
-      variantId: currentVariant.id,
+      variantId: selectedVariant.id,
       name: product.name,
       price: unitPrice,
-      weight: selectedSize,
+      weight: selectedVariant.weight,
       quantity: quantity,
       image: productImages[0]
     }, true);
@@ -80,13 +84,19 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       setCurrentImageIndex(0);
+      setQuantity(1);
+      if (product && product.variants && product.variants.length > 0) {
+        const sorted = [...product.variants].sort((a, b) => b.price - a.price);
+        setSelectedVariant(sorted[0]);
+      }
     } else {
       document.body.style.overflow = 'unset';
     }
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen]);
+  }, [isOpen, product?.id]); // Only reset when modal opens or product changes
+
 
   if (!isOpen) return null;
 
@@ -99,7 +109,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/50"
         />
 
         {/* Modal Content */}
@@ -107,19 +117,19 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative bg-white w-full max-w-5xl rounded-2xl md:rounded-sm overflow-hidden flex flex-col md:flex-row max-h-[95vh] md:max-h-[90vh] shadow-2xl"
+          className="relative bg-white w-full max-w-[900px] overflow-hidden flex flex-col md:flex-row max-h-[95vh] md:max-h-[85vh] shadow-2xl"
         >
           {/* Close Button */}
           <button 
             onClick={onClose}
-            className="absolute top-4 md:top-6 right-4 md:right-6 z-20 p-2 bg-white/80 backdrop-blur-sm md:bg-transparent hover:bg-gray-100 rounded-full transition-colors shadow-sm md:shadow-none"
+            className="absolute top-4 right-4 z-20 p-1.5 hover:bg-gray-100 rounded-sm transition-colors"
           >
-            <X className="w-5 md:w-6 h-5 md:h-6 text-gray-900" />
+            <X className="w-5 h-5 text-gray-600" />
           </button>
 
           {/* Left: Image Gallery */}
-          <div className="w-full md:w-1/2 bg-white p-6 md:p-8 flex flex-col items-center justify-center relative border-b md:border-r md:border-b-0 border-gray-100 shrink-0">
-            <div className="relative w-full aspect-[4/3] md:aspect-square mb-4 md:mb-8 overflow-hidden">
+          <div className="w-full md:w-[45%] bg-white flex flex-col items-center justify-start relative shrink-0 pt-6">
+            <div className="relative w-full aspect-square overflow-hidden">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentImageIndex}
@@ -133,119 +143,119 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
                     src={productImages[currentImageIndex]} 
                     alt={product.name} 
                     fill 
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-contain p-4 md:p-8"
+                    sizes="(max-width: 768px) 100vw, 45vw"
+                    className="object-contain p-6 md:p-10"
                   />
-
                 </motion.div>
               </AnimatePresence>
             </div>
             
             {/* Gallery Navigation */}
             {productImages.length > 1 && (
-              <div className="flex items-center gap-4 md:gap-6 mt-auto">
+              <div className="flex items-center gap-4 pb-4">
                 <button 
                   onClick={prevImage}
-                  className="p-2 hover:bg-gray-50 rounded-full transition-colors text-gray-400 hover:text-black"
+                  className="p-1 hover:bg-white/80 rounded-full transition-colors text-gray-400 hover:text-gray-700"
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   {productImages.map((_: string, i: number) => (
                     <div 
                       key={i} 
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        currentImageIndex === i ? 'w-6 bg-gray-900' : 'w-2 bg-gray-200'
+                      onClick={() => setCurrentImageIndex(i)}
+                      className={`rounded-full transition-all duration-300 cursor-pointer ${
+                        currentImageIndex === i ? 'w-5 h-2.5 bg-gray-800' : 'w-2.5 h-2.5 bg-gray-300'
                       }`} 
                     />
                   ))}
                 </div>
-
                 <button 
                   onClick={nextImage}
-                  className="p-2 hover:bg-gray-50 rounded-full transition-colors text-gray-400 hover:text-black"
+                  className="p-1 hover:bg-white/80 rounded-full transition-colors text-gray-400 hover:text-gray-700"
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             )}
           </div>
 
           {/* Right: Product Details */}
-          <div className="w-full md:w-1/2 p-6 md:p-10 overflow-y-auto">
-            <div className="space-y-6 md:space-y-8">
-              <div className="space-y-2 md:space-y-4">
-                  {/* Badges Stack */}
-                  <div className="flex flex-wrap gap-1 md:gap-1.5 mb-2">
-                    {product.badge_text && (
-                      <span className="bg-[#D14343] text-white text-[12px] md:text-[15px] font-black px-2 md:px-3 py-0.5 rounded-[2px] uppercase tracking-wider shadow-lg shadow-black/10 border border-white/10 leading-tight">
-                        {product.badge_text}
-                      </span>
-                    )}
-                    {Array.isArray(product.tags) && product.tags.map((tag: string) => {
-                      const t = tag.toLowerCase();
-                      let style = "bg-[#006837] text-white";
-                      if (t.includes('off') || t.includes('save') || t.includes('sale') || t.includes('limited') || t.includes('low') || t.includes('left')) style = "bg-[#D14343] text-white";
-                      else if (t.includes('bestseller') || t.includes('hot') || t.includes('popular')) style = "bg-amber-500 text-white";
-                      else if (t.includes('new') || t.includes('added')) style = "bg-blue-600 text-white";
-                      else if (t.includes('free') || t.includes('delivery') || t.includes('shipping')) style = "bg-teal-600 text-white";
-                      else if (t.includes('natural') || t.includes('organic') || t.includes('health') || t.includes('sugar') || t.includes('quality')) style = "bg-emerald-600 text-white";
-                      else if (t.includes('premium')) style = "bg-purple-600 text-white";
+          <div className="w-full md:w-[55%] p-6 md:p-8 overflow-y-auto">
+            <div className="space-y-5">
+              
+              {/* Brand Name */}
+              <p className="text-[14px] text-[#006837] font-medium tracking-wide">
+                HEALTHY
+              </p>
 
-                      return (
-                        <span key={tag} className={`${style} text-[12px] md:text-[15px] font-black px-2 md:px-3 py-0.5 rounded-[2px] uppercase tracking-wider shadow-lg shadow-black/10 border border-white/10 whitespace-nowrap leading-tight`}>
-                          {tag}
-                        </span>
-                      );
-                    })}
-                  </div>
-                <h2 className="text-[28px] md:text-[42px] font-medium text-gray-900 leading-tight tracking-tight font-heading">
-                  {product.name}
-                </h2>
-                <div className="flex items-center gap-3">
-                  <p className="text-[22px] md:text-[28px] font-bold text-[#006837]">
-                    Rs. {unitPrice.toFixed(2)} INR
-                  </p>
-                  {originalPrice && (
-                    <p className="text-[16px] md:text-[18px] text-gray-400 line-through font-medium opacity-60">
-                      Rs. {originalPrice.toFixed(0)}.00 INR
-                    </p>
+              {/* Product Name */}
+              <h2 className="text-[26px] md:text-[32px] font-bold text-gray-900 leading-tight tracking-tight">
+                {product.name}
+              </h2>
+
+              {/* Price Row */}
+              <div className="flex items-center gap-3">
+                <span className="text-[18px] md:text-[20px] font-semibold text-gray-900">
+                  Rs. {unitPrice.toFixed(2)} INR
+                </span>
+                {originalPrice && (
+                  <span className="text-[15px] text-gray-400 line-through">
+                    Rs. {originalPrice.toFixed(2)} INR
+                  </span>
+                )}
+              </div>
+
+              {/* Available in */}
+              <div className="space-y-2.5">
+                <p className="text-[14px] text-gray-600">Available in</p>
+                <div className="flex flex-wrap gap-2.5">
+                  {sortedVariants.length > 0 ? (
+                    sortedVariants.map((v: any, vIdx: number) => (
+                      <button
+                        type="button"
+                        key={v.id || `v-${vIdx}`}
+                        onClick={() => setSelectedVariant(v)}
+                        className={`px-8 py-2.5 rounded-full text-[15px] font-medium transition-all ${
+                          selectedVariant?.id === v.id 
+                            ? 'border-[1.5px] border-black text-black' 
+                            : 'border border-gray-200 text-black hover:border-gray-400'
+                        }`}
+                      >
+                        {v.weight}
+                      </button>
+                    ))
+                  ) : (
+                    ['1000 G', '500 G', '250 G'].map((size: string) => (
+                      <button key={`fallback-${size}`} className="px-8 py-2.5 rounded-full text-[15px] font-medium border border-gray-100 text-gray-300 cursor-not-allowed">
+                        {size}
+                      </button>
+                    ))
                   )}
                 </div>
               </div>
 
-
-              {/* Size Selection */}
-              <div className="space-y-3 md:space-y-4">
-                <p className="text-[14px] md:text-[15px] text-gray-900 font-medium">Available in</p>
-                <div className="flex flex-wrap gap-2 md:gap-3">
-                  {(sortedVariants.length > 0 ? sortedVariants.map((v: any) => v.weight) : ['250 G', '500 G', '1000 G']).map((size: string) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`px-4 md:px-8 py-2 md:py-3 rounded-full text-[13px] md:text-[15px] font-medium transition-all ${
-                        selectedSize === size 
-                          ? 'border-2 border-gray-900 text-gray-900 shadow-sm' 
-                          : 'border border-gray-200 text-gray-600 hover:border-gray-900'
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Dynamic Price Display */}
-              <div className="pt-2 border-t border-gray-50 mt-4 pb-4 border-b border-gray-100">
-                <div className="flex items-baseline">
-                  <span className="text-[32px] md:text-[42px] font-bold text-gray-900 tracking-tighter">
-                    Rs. {totalPrice.toFixed(2)} INR
-                  </span>
-                </div>
+              {/* Large Total Price Section */}
+              <div className="border-t border-gray-100 pt-4 space-y-1">
+                <p className="text-[28px] md:text-[34px] font-bold text-gray-900 tracking-tight leading-tight">
+                  Rs. {totalPrice.toFixed(2)} INR
+                </p>
+                {totalOriginalPrice && (
+                  <div className="space-y-0.5">
+                    <p className="text-[13px] text-gray-400 line-through">
+                      Rs. {totalOriginalPrice.toFixed(2)} INR
+                    </p>
+                    {savings && savings > 0 && (
+                      <p className="text-[12px] text-gray-400">
+                        you save Rs. {savings.toFixed(2)} INR
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col gap-3 md:gap-4 pt-2 md:pt-4">
+              <div className="flex flex-col gap-3 pt-1 border-t border-gray-100">
                 {product.is_sold_out ? (
                   <Button 
                     disabled
@@ -255,36 +265,39 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
                   </Button>
                 ) : (
                   <>
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-4">
-                      <div className="flex items-center border border-gray-900 rounded-full p-1 min-w-[120px] md:min-w-[140px] justify-between bg-white">
+                    <div className="flex items-center gap-3">
+                      {/* Quantity Selector */}
+                      <div className="flex items-center border border-gray-300 rounded-full overflow-hidden">
                         <button 
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="p-2 md:p-3 hover:bg-gray-50 rounded-full transition-colors text-gray-900"
+                          className="p-2.5 hover:bg-gray-50 transition-colors text-gray-600"
                         >
-                          <Minus className="w-3.5 md:w-4 h-3.5 md:h-4" />
+                          <Minus className="w-4 h-4" />
                         </button>
-                        <span className="text-[16px] md:text-[18px] font-bold w-10 md:w-12 text-center text-gray-900">{quantity}</span>
+                        <span className="text-[15px] font-semibold w-10 text-center text-gray-900">{quantity}</span>
                         <button 
                           onClick={() => setQuantity(quantity + 1)}
-                          className="p-2 md:p-3 hover:bg-gray-50 rounded-full transition-colors text-gray-900"
+                          className="p-2.5 hover:bg-gray-50 transition-colors text-gray-600"
                         >
-                          <Plus className="w-3.5 md:w-4 h-3.5 md:h-4" />
+                          <Plus className="w-4 h-4" />
                         </button>
                       </div>
+                      {/* Add to Cart */}
                       <Button 
                         onClick={handleAddToCart}
                         loading={isAdding}
                         disabled={isBuyingNow}
-                        className="flex-1 bg-black text-white py-3.5 md:py-4 px-6 md:px-8 rounded-full font-bold hover:bg-gray-800 transition-all text-[14px] md:text-[15px] h-auto"
+                        className="flex-1 bg-gray-900 text-white py-3 px-6 rounded-full font-semibold hover:bg-black transition-all text-[14px] h-auto"
                       >
                         Add to cart
                       </Button>
                     </div>
+                    {/* Buy it now */}
                     <Button 
                       onClick={handleBuyNow}
                       loading={isBuyingNow}
                       disabled={isAdding}
-                      className="w-full border border-gray-900 py-3.5 md:py-4 rounded-full font-bold text-gray-900 hover:bg-gray-50 transition-all text-[14px] md:text-[15px] h-auto bg-transparent"
+                      className="w-full border border-gray-900 py-3 rounded-full font-semibold text-gray-900 hover:bg-gray-50 transition-all text-[14px] h-auto bg-transparent"
                     >
                       Buy it now
                     </Button>

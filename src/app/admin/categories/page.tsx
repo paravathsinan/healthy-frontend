@@ -18,7 +18,7 @@ export default function AdminCategoriesPage() {
   const [selectedCategory, setSelectedCategory] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<any | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
 
@@ -55,8 +55,8 @@ export default function AdminCategoriesPage() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    setCategoryToDelete(id);
+  const handleDelete = (category: any) => {
+    setCategoryToDelete(category);
     setIsDeleteDialogOpen(true);
   };
 
@@ -65,8 +65,8 @@ export default function AdminCategoriesPage() {
     
     setIsDeleting(true);
     try {
-      await api.delete(`/categories/${categoryToDelete}/`);
-      toast.success("Category deleted successfully");
+      await api.delete(`/categories/${categoryToDelete.id}/`);
+      toast.success(`Category "${categoryToDelete.name}" deleted successfully`);
       fetchCategories();
     } catch (error) {
       toast.error("Failed to delete category");
@@ -130,7 +130,7 @@ export default function AdminCategoriesPage() {
             </div>
           ))
         ) : (
-          filteredCategories.map((cat: any) => (
+          filteredCategories.map((cat: any, i: number) => (
 
             <div key={cat.id} className="relative bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden group hover:shadow-xl hover:shadow-black/5 transition-all duration-500">
               <Link 
@@ -146,6 +146,8 @@ export default function AdminCategoriesPage() {
                       fill 
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                       className="object-contain p-6 transition-transform duration-700 group-hover:scale-110"
+                      loading={i < 2 ? "eager" : "lazy"}
+                      priority={i === 0}
                     />
 
                   ) : (
@@ -163,8 +165,8 @@ export default function AdminCategoriesPage() {
                 </div>
               </Link>
               
-              {/* Actions Overlay - Hidden by default, shows on hover */}
-              <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+              {/* Actions Overlay - Always visible on mobile, hover effect on desktop */}
+              <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-20">
                 <button 
                   onClick={(e) => {
                     e.preventDefault();
@@ -179,7 +181,7 @@ export default function AdminCategoriesPage() {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleDelete(cat.id);
+                    handleDelete(cat);
                   }}
                   className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
                 >

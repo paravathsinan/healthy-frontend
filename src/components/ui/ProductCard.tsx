@@ -41,7 +41,7 @@ const ProductCardBase = ({ product, index, onQuickView, onBuyNow, loadingId }: P
           )}
 
           {/* Dynamic Tags */}
-          {Array.isArray(product.tags) && product.tags.map((tag: string) => {
+          {Array.isArray(product.tags) && product.tags.map((tag: string, idx: number) => {
             const t = tag.toLowerCase();
             let style = "bg-[#006837] text-white";
             
@@ -59,7 +59,7 @@ const ProductCardBase = ({ product, index, onQuickView, onBuyNow, loadingId }: P
               style = "bg-purple-600 text-white";
 
             return (
-              <span key={tag} className={`${style} text-[12px] md:text-[15px] font-black px-2 md:px-3 py-0.5 rounded-[2px] uppercase tracking-wider shadow-lg shadow-black/10 border border-white/10 whitespace-nowrap leading-tight`}>
+              <span key={`tag-${tag}-${idx}`} className={`${style} text-[12px] md:text-[15px] font-black px-2 md:px-3 py-0.5 rounded-[2px] uppercase tracking-wider shadow-lg shadow-black/10 border border-white/10 whitespace-nowrap leading-tight`}>
                 {tag}
               </span>
             );

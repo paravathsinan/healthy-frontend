@@ -1,18 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Outfit } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
-
-const plusJakartaSans = Plus_Jakarta_Sans({ 
-  subsets: ["latin"],
-  variable: "--font-plus-jakarta",
-});
-
-const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-outfit",
-});
 
 export const metadata: Metadata = {
   title: "healthydates.in | Premium Dry Fruits Store",
@@ -38,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${plusJakartaSans.variable} ${outfit.variable} font-sans antialiased`}>
+      <body className="font-sans antialiased">
         <CategoryProvider>
           <BfcacheHandler />
           <Suspense fallback={null}>

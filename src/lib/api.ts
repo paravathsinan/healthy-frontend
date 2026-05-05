@@ -7,7 +7,7 @@ console.log(`🚀 API Base URL: ${API_BASE_URL}`);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000, // 10 seconds timeout
+  timeout: 15000, // 15 seconds timeout
   headers: {
     'Content-Type': 'application/json',
   },
@@ -20,7 +20,8 @@ api.interceptors.request.use((config) => {
   
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('access_token');
-    if (token) {
+    // Don't send token for login requests to avoid 401 errors from stale tokens
+    if (token && !config.url?.includes('/login/')) {
       config.headers.Authorization = `Token ${token}`;
     }
   }
@@ -90,7 +91,7 @@ export const getProducts = async (params: any = {}) => {
   try {
     const queryString = new URLSearchParams(params).toString();
     const res = await fetch(`${API_BASE_URL}/products/${queryString ? `?${queryString}` : ''}`, {
-      next: { revalidate: 60 }
+      next: { revalidate: 5 } // Reduced to 5 seconds for better sync with admin changes
     });
     if (!res.ok) throw new Error('Network response was not ok');
     const data = await res.json();
@@ -99,6 +100,12 @@ export const getProducts = async (params: any = {}) => {
     const response = await api.get('/products/', { params });
     return response.data.results || response.data;
   }
+};
+
+// Admin-specific: always bypass cache to get live DB data
+export const getAdminProducts = async (params: any = {}) => {
+  const response = await api.get('/products/', { params });
+  return response.data.results || response.data;
 };
 
 export const getProductDetail = async (slug: string) => {

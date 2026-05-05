@@ -125,8 +125,8 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
         name: product.name || "",
         description: product.description || "",
         category: "",
-        base_price: product.admin_price || "",
-        base_discount_price: product.variants?.find((v: any) => v.price === product.admin_price)?.discount_price || "",
+        base_price: product.base_price || product.admin_price || "",
+        base_discount_price: product.base_discount_price || product.admin_discount_price || "",
         is_featured: product.is_featured || false,
         is_new_arrival: product.is_new_arrival || false,
         is_sold_out: product.is_sold_out || false,
@@ -134,7 +134,7 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
         badge_text: product.badge_text || "",
         tags: Array.isArray(product.tags) ? product.tags : [],
         stock: "100",
-        image: product.images?.find((img: any) => img.is_primary)?.image_url || "",
+        image: product.primary_image || "",
         gallery: product.images?.filter((img: any) => !img.is_primary).map((img: any) => img.image_url) || [],
       });
     } else {
@@ -307,7 +307,7 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
                   <div className="flex items-center gap-3 text-gray-400"><Tag size={16} /><span className="text-[10px] font-bold uppercase tracking-widest">Pricing & Visibility</span></div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Price (₹) - per kg/Unit</Label>
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Selling Price(₹) - per kg/Unit</Label>
                       <input 
                         type="number" 
                         readOnly={!isEditing} 
@@ -318,7 +318,7 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Old Price (₹) - per kg/Unit</Label>
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">MRP Price(₹) - per kg/Unit</Label>
                       <input 
                         type="number" 
                         readOnly={!isEditing} 
@@ -508,24 +508,44 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
             </div>
 
             {/* Footer */}
-            <div className="py-4 px-8 bg-gray-100/80 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-6 shrink-0">
-              <div className="flex items-center gap-4 flex-1">
+            <div className="py-4 px-6 md:px-8 bg-gray-100/80 border-t border-gray-100 flex flex-row justify-between items-center gap-4 shrink-0">
+              <div className="flex items-center gap-4 flex-1 min-w-0">
                 {!isEditing && (
-                  <div><p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest text-xs">Product Price</p><p className="text-2xl md:text-3xl font-black text-gray-900 font-heading tracking-tighter">₹{formData.base_price}</p></div>
+                  <div className="truncate">
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Product Price</p>
+                    <p className="text-xl md:text-3xl font-black text-gray-900 font-heading tracking-tighter truncate">₹{formData.base_price}</p>
+                  </div>
                 )}
                 {isEditing && (
-                  <button onClick={() => product ? setIsEditing(false) : onClose()} className="px-6 py-4 rounded-2xl bg-white border border-gray-100 text-gray-500 font-bold text-xs hover:bg-gray-50 transition-all">Cancel</button>
+                  <button onClick={() => product ? setIsEditing(false) : onClose()} className="px-4 md:px-6 py-3.5 md:py-4 rounded-2xl bg-white border border-gray-100 text-gray-500 font-bold text-[11px] md:text-xs hover:bg-gray-50 transition-all whitespace-nowrap">Cancel</button>
                 )}
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-2 shrink-0">
                 {!isEditing ? (
                   <>
-                    <button type="button" onClick={handleDelete} className="px-6 py-4 rounded-2xl bg-white border border-red-100 text-red-500 font-bold text-xs hover:bg-red-50 transition-all flex items-center justify-center gap-2"><Trash2 size={16} />Delete</button>
-                    <button onClick={() => setIsEditing(true)} className="bg-[#006837] text-white px-12 py-4 rounded-full text-sm font-bold hover:bg-black transition-all shadow-lg flex items-center justify-center gap-3 active:scale-95"><Edit3 size={18} />Edit Product</button>
+                    <button 
+                      type="button" 
+                      onClick={handleDelete} 
+                      disabled={loading}
+                      className="p-3.5 md:px-6 md:py-4 rounded-2xl bg-white border border-red-100 text-red-500 font-bold text-xs hover:bg-red-50 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {loading ? (
+                        <div className="h-4 w-4 border-2 border-red-200 border-t-red-500 rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Trash2 size={16} />
+                          <span className="hidden md:inline">Delete</span>
+                        </>
+                      )}
+                    </button>
+                    <button onClick={() => setIsEditing(true)} className="bg-[#006837] text-white px-6 md:px-12 py-3.5 md:py-4 rounded-full text-[12px] md:text-sm font-bold hover:bg-black transition-all shadow-lg flex items-center justify-center gap-2 md:gap-3 active:scale-95 whitespace-nowrap">
+                      <Edit3 size={16} className="md:w-[18px] md:h-[18px]" />
+                      Edit Product
+                    </button>
                   </>
                 ) : (
-                  <button type="submit" onClick={handleSubmit} disabled={loading} className="bg-[#006837] text-white px-12 py-4 rounded-full text-sm font-bold hover:bg-black transition-all shadow-lg flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 min-w-[200px]">
-                    {loading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>{product ? <Save size={18} /> : <Plus size={18} />}{product ? "Save Changes" : "Add Product"}</>}
+                  <button type="submit" onClick={handleSubmit} disabled={loading} className="bg-[#006837] text-white px-6 md:px-12 py-3.5 md:py-4 rounded-full text-[12px] md:text-sm font-bold hover:bg-black transition-all shadow-lg flex items-center justify-center gap-2 md:gap-3 active:scale-95 disabled:opacity-50 min-w-[120px] md:min-w-[200px]">
+                    {loading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>{product ? <Save size={16} className="md:w-[18px] md:h-[18px]" /> : <Plus size={16} className="md:w-[18px] md:h-[18px]" />}{product ? "Save" : "Add Product"}</>}
                   </button>
                 )}
               </div>

@@ -200,14 +200,21 @@ export function OrderDetailsModal({ order, isOpen, onClose, onUpdate }: OrderDet
                       setTimeout(() => setConfirmDelete(false), 3000); // Reset after 3s
                     }
                   }}
-                  className={`px-6 py-3.5 rounded-2xl md:rounded-full text-xs font-bold transition-all flex items-center justify-center gap-3 border ${
+                  disabled={loading}
+                  className={`px-6 py-3.5 rounded-2xl md:rounded-full text-xs font-bold transition-all flex items-center justify-center gap-3 border disabled:opacity-50 min-w-[140px] ${
                     confirmDelete 
                       ? 'bg-red-600 text-white border-red-600' 
                       : 'bg-white text-red-500 border-red-100 hover:bg-red-50'
                   }`}
                 >
-                  <Trash2 size={16} />
-                  {confirmDelete ? 'Confirm Delete?' : 'Delete'}
+                  {loading ? (
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Trash2 size={16} />
+                      {confirmDelete ? 'Confirm Delete?' : 'Delete'}
+                    </>
+                  )}
                 </button>
 
                 <button 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import { getProducts, getCategories } from "@/lib/api";
+import { getAdminProducts, getCategories } from "@/lib/api";
 import AdminProductTable from "@/components/admin/ProductTable";
 import { Search, Plus, Package, Edit3, Trash2, ArrowLeft } from "lucide-react";
 import { ProductModal } from "@/components/admin/ProductModal";
@@ -30,7 +30,7 @@ export default function DynamicCategoryProductsPage({ params }: { params: Promis
     setLoading(true);
     try {
       // 1. Fetch products for this category
-      const productData = await getProducts({ category__slug: slug });
+      const productData = await getAdminProducts({ category__slug: slug });
       setProducts(productData);
       
       // 2. Fetch category details
@@ -94,24 +94,6 @@ export default function DynamicCategoryProductsPage({ params }: { params: Promis
               <h1 className="text-2xl font-black text-gray-900 tracking-tight font-heading">
                 {category?.name || 'Category'} Gallery
               </h1>
-              {category && (
-                <div className="flex gap-1.5">
-                  <button 
-                    onClick={() => setIsCategoryModalOpen(true)}
-                    className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-[#006837] transition-colors"
-                    title="Edit Category"
-                  >
-                    <Edit3 size={14} />
-                  </button>
-                  <button 
-                    onClick={handleDeleteCategory}
-                    className="p-1.5 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
-                    title="Delete Category"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              )}
             </div>
             <p className="text-[13px] text-gray-500 font-medium">
               Managing {products.length} products in {category?.name || 'this category'}.

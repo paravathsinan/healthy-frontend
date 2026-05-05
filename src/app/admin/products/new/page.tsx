@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { getProducts, getCategories } from "@/lib/api";
+import { getAdminProducts, getCategories } from "@/lib/api";
 import AdminProductTable from "@/components/admin/ProductTable";
 import { Search, Plus, Package, Loader2, Sparkles, Filter } from "lucide-react";
 import { ProductModal } from "@/components/admin/ProductModal";
@@ -26,7 +26,7 @@ function NewArrivalProductsContent() {
     try {
       const params: any = { is_new_arrival: true };
       if (categorySlug) params.category__slug = categorySlug;
-      const data = await getProducts(params);
+      const data = await getAdminProducts(params);
       setProducts(data);
       
       const cats = await getCategories();

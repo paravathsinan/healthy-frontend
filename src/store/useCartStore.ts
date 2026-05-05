@@ -92,14 +92,21 @@ export const useCartStore = create<CartStore>()(
           ),
         });
       },
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ 
+        items: [],
+        customerDetails: {
+          name: '',
+          phone: '',
+          address: '',
+        }
+      }),
       totalPrice: () => {
         return get().items.reduce((acc, item) => acc + item.price * item.quantity, 0);
       },
       createOrder: async (orderData) => {
         const response = await apiCreateOrder(orderData);
-        // We can clear cart here if needed after successful order
-        // get().clearCart();
+        // Clear cart after successful order creation
+        get().clearCart();
         return response;
       },
     }),

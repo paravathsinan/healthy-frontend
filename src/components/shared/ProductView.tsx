@@ -49,7 +49,7 @@ export default function ProductView({ product }: ProductViewProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         {/* Left: Image Gallery */}
         <div className="space-y-4">
-          <div className="relative aspect-square rounded-3xl overflow-hidden bg-stone-50 border border-stone-100 shadow-sm group">
+          <div className="relative aspect-square rounded-3xl overflow-hidden bg-white border border-stone-100 shadow-sm group">
             <Image 
               src={product.images?.[0]?.image_url || product.primary_image || '/images/placeholder.png'} 
               alt={product.name} 
@@ -98,33 +98,41 @@ export default function ProductView({ product }: ProductViewProps) {
                 <span className="text-sm font-bold text-stone-900 ml-1">4.9 (120+ reviews)</span>
               </div>
             </div>
+            <p className="text-[14px] text-[#006837] font-medium tracking-wide mb-2">HEALTHY</p>
             <h1 className="text-4xl font-bold text-stone-900 tracking-tight">{product.name}</h1>
             <p className="text-gray-500 text-lg leading-relaxed">{product.description}</p>
           </div>
 
           {/* Pricing & Variants */}
-          <div className="bg-stone-50 p-6 rounded-3xl border border-stone-100 mb-8">
-            <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4">Select Weight</p>
-            <div className="flex flex-wrap gap-3 mb-6">
-              {sortedVariants.map((v: any) => (
-                <button
-                  key={v.id}
-                  onClick={() => setSelectedVariant(v)}
-                  className={`px-6 py-3 rounded-2xl border-2 transition-all font-semibold ${
-                    selectedVariant?.id === v.id
-                      ? "border-amber-600 bg-white text-amber-700 shadow-md scale-105"
-                      : "border-gray-200 bg-transparent text-gray-500 hover:border-gray-300"
-                  }`}
-                >
-                  {v.weight}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-baseline gap-3">
-              <span className="text-4xl font-black text-stone-900">₹{selectedVariant?.price || 0}</span>
-              {selectedVariant?.discount_price && (
-                <span className="text-xl text-gray-400 line-through">₹{selectedVariant.discount_price}</span>
-              )}
+          <div className="mb-8 border-t border-b border-gray-100 py-6">
+            <div className="space-y-4">
+              <p className="text-[15px] text-gray-600 font-medium">Available in</p>
+              <div className="flex flex-wrap gap-3 mb-6">
+                {sortedVariants.map((v: any, vIdx: number) => (
+                  <button
+                    type="button"
+                    key={v.id || `v-${vIdx}`}
+                    onClick={() => setSelectedVariant(v)}
+                    className={`px-8 py-2.5 rounded-full text-[15px] font-medium transition-all ${
+                      selectedVariant?.id === v.id
+                        ? 'border-[1.5px] border-black text-black shadow-sm'
+                        : 'border border-gray-200 text-black hover:border-gray-400'
+                    }`}
+                  >
+                    {v.weight}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-baseline gap-3 pt-2">
+                <span className="text-[32px] md:text-[42px] font-bold text-gray-900 tracking-tight">
+                  Rs. {selectedVariant?.price || 0} INR
+                </span>
+                {selectedVariant?.discount_price && (
+                  <span className="text-[18px] text-gray-400 line-through">
+                    Rs. {selectedVariant.discount_price} INR
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 

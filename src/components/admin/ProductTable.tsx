@@ -71,7 +71,7 @@ export default function AdminProductTable({ products: initialProducts, categorie
             <TableHead className="font-bold text-gray-900 h-12 px-6 text-[11px] uppercase tracking-wider">Product</TableHead>
             <TableHead className="font-bold text-gray-900 h-12 text-[11px] uppercase tracking-wider">Category</TableHead>
             <TableHead className="font-bold text-gray-900 h-12 text-[11px] uppercase tracking-wider">Status</TableHead>
-            <TableHead className="font-bold text-gray-900 h-12 text-[11px] uppercase tracking-wider">Price / 1kg or Unit</TableHead>
+            <TableHead className="font-bold text-gray-900 h-12 text-[11px] uppercase tracking-wider">Selling Price / kg or Unit</TableHead>
             <TableHead className="font-bold text-gray-900 h-12 text-right px-6 text-[11px] uppercase tracking-wider">Updated</TableHead>
           </TableRow>
         </TableHeader>
@@ -120,7 +120,7 @@ export default function AdminProductTable({ products: initialProducts, categorie
               </TableCell>
               <TableCell>
                 <div className="flex flex-col">
-                  <span className="text-gray-900 font-bold text-[13px]">₹{product.admin_price}</span>
+                  <span className="text-gray-900 font-bold text-[13px]">₹{product.base_price || product.admin_price}</span>
                   {product.admin_weight && (
                     <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">
                       / {formatWeight(product.admin_weight)}

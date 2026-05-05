@@ -84,7 +84,8 @@ export default async function HomePage() {
                   fill 
                   sizes="(max-width: 768px) 50vw, 25vw"
                   className="object-contain transition-transform duration-700 group-hover:scale-110" 
-                  loading="lazy"
+                  loading={i < 2 ? "eager" : "lazy"}
+                  priority={i === 0}
                 />
               </div>
               <p className="font-extrabold text-[20px] md:text-2xl text-gray-900 group-hover:text-black transition-colors leading-tight px-2">

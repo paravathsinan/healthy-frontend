@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { LayoutDashboard, Box, Layers, ClipboardList, LogOut, ExternalLink, RefreshCw, Monitor, Menu, X } from "lucide-react";
 import Image from "next/image";
+import api from "@/lib/api";
 import { useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
 
@@ -27,6 +28,7 @@ export default function AdminLayout({
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
+    // 1. Quick local check for token
     const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
     
     if (pathname === '/admin/login') {
@@ -40,23 +42,16 @@ export default function AdminLayout({
       return;
     }
 
-    // Safety timeout: If verification takes too long, stop loading
-    const safetyTimeout = setTimeout(() => {
-      setIsAuthLoading(false);
-    }, 5000);
-
+    // 2. Perform background verification
     const verifyToken = async () => {
       try {
-        // Use the actual API to verify the token
-        const api = (await import('@/lib/api')).default;
         await api.get('/verify-token/');
         setIsAuthLoading(false);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Token verification failed:", error);
-        // Interceptor in api.ts will handle redirect to login on 401
+        // On failure, redirect to login
+        router.push('/admin/login');
         setIsAuthLoading(false);
-      } finally {
-        clearTimeout(safetyTimeout);
       }
     };
 
@@ -204,7 +199,7 @@ export default function AdminLayout({
             <button 
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="hidden sm:flex items-center gap-2 text-[10px] font-medium text-gray-800 hover:text-[#006837] transition-all bg-gray-50 px-4 py-2 rounded-full border border-gray-100"
+              className="flex items-center gap-2 text-[10px] font-medium text-gray-800 hover:text-[#006837] transition-all bg-gray-50 px-3 sm:px-4 py-2 rounded-full border border-gray-100"
             >
               <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
               {isRefreshing ? 'REFRESHING...' : 'REFRESH'}

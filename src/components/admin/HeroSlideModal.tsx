@@ -81,7 +81,6 @@ export function HeroSlideModal({ isOpen, onClose, slide, onSuccess }: HeroSlideM
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        onOpenAutoFocus={(e) => e.preventDefault()}
         className="sm:max-w-[550px] bg-white rounded-[2.5rem] p-0 border-none shadow-2xl overflow-hidden"
       >
 

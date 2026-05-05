@@ -97,15 +97,6 @@ function TrackOrderContent() {
   const [order, setOrder] = useState<any>(null);
   const [error, setError] = useState("");
 
-  // Scroll to title on mount (Desktop Only)
-  useEffect(() => {
-    if (window.innerWidth < 768) return;
-    
-    const timer = setTimeout(() => {
-      titleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleTrack = async (e?: React.FormEvent, initialOrderId?: string, initialPhone?: string) => {
     if (e) e.preventDefault();
@@ -128,10 +119,6 @@ function TrackOrderContent() {
       params.set("phone", phoneToTrack);
       router.replace(`/track-order?${params.toString()}`, { scroll: false });
 
-      // Scroll to results after a short delay to allow content to render
-      setTimeout(() => {
-        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
     } catch (err: any) {
       setOrder(null);
       setError(err.response?.data?.error || "Order not found. Please check your Order ID or phone number.");
@@ -190,7 +177,7 @@ function TrackOrderContent() {
   const statusInfo = order ? getStatusDisplay(order.status) : null;
 
   return (
-    <div className="min-h-fit bg-[#F9F9F9] pt-6 pb-6 sm:pt-12 sm:pb-12 px-4 sm:px-6">
+    <div className="min-h-fit bg-[#F9F9F9] pt-2 pb-6 sm:pt-4 sm:pb-12 px-4 sm:px-6">
       <div className="max-w-3xl mx-auto">
         {/* Back to Home */}
         <Link 

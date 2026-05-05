@@ -70,7 +70,6 @@ export function CategoryModal({ isOpen, onClose, category, onSuccess }: Category
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        onOpenAutoFocus={(e) => e.preventDefault()}
         className="w-[95%] sm:max-w-[450px] bg-white rounded-3xl p-6 md:p-8 border-none shadow-2xl"
       >
         <DialogHeader>
