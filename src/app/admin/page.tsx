@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { getProducts, getCategories, getDashboardStats, getVisitors } from "@/lib/api";
+import api from "@/lib/api";
 import {
   Users, MessageCircle, ArrowUpRight, Package, List,
-  RefreshCw, ChevronDown, ChevronUp, Globe, Clock, Hash, Loader2
+  RefreshCw, ChevronDown, ChevronUp, Globe, Clock, Hash, Loader2, Trash2, Timer
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -24,6 +25,7 @@ export default function AdminDashboard() {
   const [visitorsLoading, setVisitorsLoading] = useState(false);
   const [visitorsMeta, setVisitorsMeta] = useState<{ count: number; total_pages: number; page: number } | null>(null);
   const [visitorsPage, setVisitorsPage] = useState(1);
+  const [clearingVisitors, setClearingVisitors] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -96,6 +98,33 @@ export default function AdminDashboard() {
   const formatTime = (iso: string) => {
     const d = new Date(iso);
     return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+  };
+
+  /** Converts total seconds into a human-readable string e.g. "2h 14m" or "45s" */
+  const formatDuration = (seconds: number): string => {
+    if (!seconds || seconds < 1) return "< 1s";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h > 0) return `${h}h ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+  };
+
+  const handleClearVisitors = async () => {
+    if (!window.confirm("Clear ALL visitor records? This cannot be undone.")) return;
+    setClearingVisitors(true);
+    try {
+      await api.delete('/clear-visitors/');
+      setVisitors([]);
+      setVisitorsMeta(null);
+      setStatsData((prev: any) => prev ? { ...prev, total_visitors: 0 } : prev);
+      toast.success("All visitor records cleared");
+    } catch {
+      toast.error("Failed to clear visitors");
+    } finally {
+      setClearingVisitors(false);
+    }
   };
 
   const stats = [
@@ -193,9 +222,21 @@ export default function AdminDashboard() {
                   </p>
                 </div>
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-purple-400 bg-purple-50 px-3 py-1 rounded-full">
-                Newest First
-              </span>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleClearVisitors}
+                  disabled={clearingVisitors || !visitorsMeta?.count}
+                  className="flex items-center gap-1.5 text-[11px] font-bold text-red-400 hover:text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-full transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  {clearingVisitors
+                    ? <Loader2 className="h-3 w-3 animate-spin" />
+                    : <Trash2 className="h-3 w-3" />}
+                  Clear All
+                </button>
+                <span className="text-[10px] font-black uppercase tracking-widest text-purple-400 bg-purple-50 px-3 py-1 rounded-full">
+                  Newest First
+                </span>
+              </div>
             </div>
 
             {/* Table Content */}
@@ -214,18 +255,19 @@ export default function AdminDashboard() {
             ) : (
               <>
                 {/* Column headers — desktop */}
-                <div className="hidden md:grid grid-cols-[2rem_1fr_1fr_1fr] gap-4 px-6 py-3 bg-gray-50/50 border-b border-gray-50">
+                <div className="hidden md:grid grid-cols-[2rem_1fr_1fr_1fr_1fr] gap-4 px-6 py-3 bg-gray-50/50 border-b border-gray-50">
                   <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">#</span>
                   <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Visitor ID</span>
                   <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">First Seen</span>
                   <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Last Seen</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Time Spent</span>
                 </div>
 
                 {/* Rows */}
                 {visitors.map((v, idx) => (
                   <div
                     key={v.visitor_id}
-                    className="flex flex-col md:grid md:grid-cols-[2rem_1fr_1fr_1fr] gap-2 md:gap-4 px-6 py-4 border-b border-gray-50/70 last:border-0 hover:bg-gray-50/40 transition-colors group"
+                    className="flex flex-col md:grid md:grid-cols-[2rem_1fr_1fr_1fr_1fr] gap-2 md:gap-4 px-6 py-4 border-b border-gray-50/70 last:border-0 hover:bg-gray-50/40 transition-colors group"
                   >
                     {/* Row number */}
                     <div className="hidden md:flex items-center">
@@ -263,6 +305,15 @@ export default function AdminDashboard() {
                       <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
                         <Clock className="h-3 w-3" /> {formatTime(v.last_seen)}
                       </p>
+                    </div>
+
+                    {/* Time Spent */}
+                    <div className="hidden md:flex flex-col justify-center">
+                      <p className="text-[12px] font-bold text-[#006837] flex items-center gap-1">
+                        <Timer className="h-3.5 w-3.5" />
+                        {formatDuration(v.total_time_seconds)}
+                      </p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">total on-site</p>
                     </div>
                   </div>
                 ))}

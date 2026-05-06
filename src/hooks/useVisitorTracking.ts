@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const VISITOR_ID_KEY = "dn_visitor_id";
 const VISITOR_TRACKED_KEY = "dn_visitor_tracked";
@@ -27,21 +27,19 @@ function generateUUID(): string {
  *
  * How it works:
  * 1. On first load, generates a UUID and saves it to localStorage (permanent).
- * 2. If the UUID hasn't been sent to the server yet (dn_visitor_tracked = false),
- *    it POSTs to /api/v1/track-visit/ with the UUID.
- * 3. On success, sets dn_visitor_tracked = "true" so it NEVER calls the API again
- *    from this browser — even across page refreshes, tab re-opens, etc.
- *
- * Result: The backend's BrowserVisitor table holds exactly one row per unique
- * browser/device. Count of rows = accurate unique visitor count.
+ * 2. POSTs to /api/v1/track-visit/ with the UUID to register the visitor.
+ *    - First visit → creates a new BrowserVisitor row (counted as +1).
+ *    - Return visits → row already exists, just updates last_seen.
+ * 3. Tracks how long the user actually spends on the site using a session
+ *    start timestamp. When the page is hidden or unloaded, it sends the
+ *    elapsed seconds to the backend via session_seconds, which are added
+ *    to that visitor's total_time_seconds cumulative counter.
  */
 export function useVisitorTracking() {
-  useEffect(() => {
-    // Only run in the browser (not during SSR)
-    if (typeof window === "undefined") return;
+  const sessionStartRef = useRef<number>(Date.now());
 
-    // If already tracked this browser, do nothing
-    if (localStorage.getItem(VISITOR_TRACKED_KEY) === "true") return;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
     // Get or generate the persistent visitor UUID for this browser
     let visitorId = localStorage.getItem(VISITOR_ID_KEY);
@@ -50,20 +48,69 @@ export function useVisitorTracking() {
       localStorage.setItem(VISITOR_ID_KEY, visitorId);
     }
 
-    // Fire-and-forget — we don't block anything on this
-    fetch(`${API_URL}/api/v1/track-visit/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ visitor_id: visitorId }),
-    })
-      .then((res) => {
-        if (res.ok || res.status === 200 || res.status === 201) {
-          // Mark as permanently tracked in this browser
-          localStorage.setItem(VISITOR_TRACKED_KEY, "true");
-        }
+    const currentVisitorId = visitorId;
+
+    // Register the visit (creates row on first visit, updates last_seen on return)
+    if (localStorage.getItem(VISITOR_TRACKED_KEY) !== "true") {
+      fetch(`${API_URL}/api/v1/track-visit/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visitor_id: currentVisitorId, session_seconds: 0 }),
       })
-      .catch(() => {
-        // Network error — do NOT set tracked flag so it retries next visit
+        .then((res) => {
+          if (res.ok || res.status === 200 || res.status === 201) {
+            localStorage.setItem(VISITOR_TRACKED_KEY, "true");
+          }
+        })
+        .catch(() => {
+          // Network error — retry on next visit
+        });
+    }
+
+    /**
+     * Sends the elapsed session seconds to the backend.
+     * Uses sendBeacon for reliability during page unload.
+     */
+    const sendSessionTime = () => {
+      const elapsed = Math.floor((Date.now() - sessionStartRef.current) / 1000);
+      if (elapsed < 2) return; // Ignore sub-2s blips
+
+      const payload = JSON.stringify({
+        visitor_id: currentVisitorId,
+        session_seconds: elapsed,
       });
+
+      // sendBeacon is fire-and-forget, survives page close
+      if (navigator.sendBeacon) {
+        const blob = new Blob([payload], { type: "application/json" });
+        navigator.sendBeacon(`${API_URL}/api/v1/track-visit/`, blob);
+      } else {
+        // Fallback for browsers without sendBeacon
+        fetch(`${API_URL}/api/v1/track-visit/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: payload,
+          keepalive: true,
+        }).catch(() => {});
+      }
+    };
+
+    // Send time when tab becomes hidden (switching apps, minimising, changing tabs)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        sendSessionTime();
+      } else {
+        // Tab became visible again — reset the session start clock
+        sessionStartRef.current = Date.now();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      // Also send when the component unmounts (navigation within SPA)
+      sendSessionTime();
+    };
   }, []);
 }

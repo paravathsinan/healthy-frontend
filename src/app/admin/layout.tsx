@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { LayoutDashboard, Box, Layers, ClipboardList, LogOut, ExternalLink, RefreshCw, Monitor, Menu, X } from "lucide-react";
 import Image from "next/image";
@@ -26,6 +26,47 @@ export default function AdminLayout({
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Swipe gesture tracking refs (no state — avoids re-renders on every touch move)
+  const touchStartX = useRef<number>(0);
+  const touchStartY = useRef<number>(0);
+  const isSwiping = useRef<boolean>(false);
+
+  /**
+   * Swipe right from the left 40px edge → opens sidebar
+   * Swipe left (anywhere, when sidebar open) → closes sidebar
+   * Min 60px horizontal travel, must be more horizontal than vertical
+   */
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    isSwiping.current = false;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: TouchEvent) => {
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+
+    // Must be more horizontal than vertical, and at least 60px
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+
+    if (dx > 0 && touchStartX.current < 40) {
+      // Swiped right from left edge → open
+      setIsSidebarOpen(true);
+    } else if (dx < 0) {
+      // Swiped left → close
+      setIsSidebarOpen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [handleTouchStart, handleTouchEnd]);
 
   useEffect(() => {
     // 1. Quick local check for token

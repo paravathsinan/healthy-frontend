@@ -58,39 +58,29 @@ export function HeroSlideModal({ isOpen, onClose, slide, onSuccess }: HeroSlideM
   }, [slide, isOpen]);
 
   /**
-   * Uploads the slide image directly to Cloudinary using a server-generated signature.
-   * Hero slides are large (1920×800+), so bypassing Django is critical for production.
+   * Sends the raw file as multipart/form-data to our Django backend.
+   * Django passes it to the Cloudinary SDK (already configured via env vars on Render).
+   * Hero slides are large — this is especially critical for production reliability.
    */
   const uploadToCloudinary = async (file: File | null) => {
     if (!file) return;
-    const folder = 'dates_nuts/hero';
     setUploadingImage(true);
 
     try {
-      // 1. Get a signed upload token from the backend (API secret stays server-side)
-      const { data: sig } = await api.get(`/cloudinary-signature/?folder=${folder}`);
-
-      // 2. Build multipart form for Cloudinary
       const form = new FormData();
       form.append('file', file);
-      form.append('api_key', sig.api_key);
-      form.append('timestamp', sig.timestamp);
-      form.append('signature', sig.signature);
-      form.append('folder', sig.folder);
+      form.append('folder', 'dates_nuts/hero');
 
-      // 3. POST directly to Cloudinary — no Django relay, no body-size limit issues
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${sig.cloud_name}/image/upload`,
-        { method: 'POST', body: form }
-      );
-      const result = await res.json();
+      const { data } = await api.post('/upload-image/', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
-      if (!result.secure_url) throw new Error(result.error?.message || 'Upload failed');
+      if (!data.url) throw new Error('Upload failed — no URL returned');
 
-      setFormData(prev => ({ ...prev, image_url: result.secure_url }));
+      setFormData(prev => ({ ...prev, image_url: data.url }));
       toast.success('Image uploaded successfully');
     } catch (err: any) {
-      toast.error(`Image upload failed: ${err.message || 'Unknown error'}`);
+      toast.error(`Image upload failed: ${err.response?.data?.error || err.message || 'Unknown error'}`);
     } finally {
       setUploadingImage(false);
     }

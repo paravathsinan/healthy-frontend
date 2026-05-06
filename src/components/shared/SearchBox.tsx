@@ -54,7 +54,7 @@ export const SearchBox = ({ isMobile }: SearchBoxProps) => {
         setPlaceholderIndex(i => (i + 1) % PLACEHOLDER_TERMS.length);
         setPlaceholderVisible(true);
       }, 300);
-    }, 3500);
+    }, 4500);
     return () => clearInterval(interval);
   }, [query]);
 

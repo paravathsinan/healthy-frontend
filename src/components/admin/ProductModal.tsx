@@ -101,43 +101,33 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
   });
 
   /**
-   * Uploads a file directly to Cloudinary using a server-generated signature.
-   * This bypasses Django's body size limit — only the resulting URL reaches the backend.
+   * Sends the raw file as multipart/form-data to our Django backend.
+   * Django passes it to the Cloudinary SDK (already configured via env vars).
+   * No signatures, no cloud_name in the browser, no Base64 inflation.
    */
   const uploadToCloudinary = async (file: File | null, target: 'primary' | 'gallery') => {
     if (!file) return;
-    const folder = 'dates_nuts/products';
     if (target === 'primary') setUploadingImage(true);
     else setUploadingGallery(true);
 
     try {
-      // 1. Get a signed upload token from our backend
-      const { data: sig } = await api.get(`/cloudinary-signature/?folder=${folder}`);
-
-      // 2. Build the multipart form for Cloudinary
       const form = new FormData();
       form.append('file', file);
-      form.append('api_key', sig.api_key);
-      form.append('timestamp', sig.timestamp);
-      form.append('signature', sig.signature);
-      form.append('folder', sig.folder);
+      form.append('folder', 'dates_nuts/products');
 
-      // 3. POST directly to Cloudinary — no base64 encoding, no server relay
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${sig.cloud_name}/image/upload`,
-        { method: 'POST', body: form }
-      );
-      const result = await res.json();
+      const { data } = await api.post('/upload-image/', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
-      if (!result.secure_url) throw new Error(result.error?.message || 'Upload failed');
+      if (!data.url) throw new Error('Upload failed — no URL returned');
 
       if (target === 'primary') {
-        setFormData(prev => ({ ...prev, image: result.secure_url }));
+        setFormData(prev => ({ ...prev, image: data.url }));
       } else {
-        setFormData(prev => ({ ...prev, gallery: [...prev.gallery, result.secure_url].slice(0, 3) }));
+        setFormData(prev => ({ ...prev, gallery: [...prev.gallery, data.url].slice(0, 3) }));
       }
     } catch (err: any) {
-      toast.error(`Image upload failed: ${err.message || 'Unknown error'}`);
+      toast.error(`Image upload failed: ${err.response?.data?.error || err.message || 'Unknown error'}`);
     } finally {
       if (target === 'primary') setUploadingImage(false);
       else setUploadingGallery(false);

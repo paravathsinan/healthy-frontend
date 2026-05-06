@@ -46,38 +46,27 @@ export function CategoryModal({ isOpen, onClose, category, onSuccess }: Category
   }, [category, isOpen]);
 
   /**
-   * Uploads directly to Cloudinary using a signed token from our backend.
-   * No Base64 — the raw file goes straight to Cloudinary, only the URL comes back.
+   * Sends the raw file as multipart/form-data to our Django backend.
+   * Django passes it to the Cloudinary SDK (already configured via env vars on Render).
    */
   const uploadToCloudinary = async (file: File | null) => {
     if (!file) return;
-    const folder = 'dates_nuts/categories';
     setUploadingImage(true);
 
     try {
-      // 1. Get a signed upload token from the backend
-      const { data: sig } = await api.get(`/cloudinary-signature/?folder=${folder}`);
-
-      // 2. Build multipart form for Cloudinary
       const form = new FormData();
       form.append('file', file);
-      form.append('api_key', sig.api_key);
-      form.append('timestamp', sig.timestamp);
-      form.append('signature', sig.signature);
-      form.append('folder', sig.folder);
+      form.append('folder', 'dates_nuts/categories');
 
-      // 3. POST directly to Cloudinary — no Django relay, no size limit issues
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${sig.cloud_name}/image/upload`,
-        { method: 'POST', body: form }
-      );
-      const result = await res.json();
+      const { data } = await api.post('/upload-image/', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
-      if (!result.secure_url) throw new Error(result.error?.message || 'Upload failed');
+      if (!data.url) throw new Error('Upload failed — no URL returned');
 
-      setFormData(prev => ({ ...prev, image_url: result.secure_url }));
+      setFormData(prev => ({ ...prev, image_url: data.url }));
     } catch (err: any) {
-      toast.error(`Image upload failed: ${err.message || 'Unknown error'}`);
+      toast.error(`Image upload failed: ${err.response?.data?.error || err.message || 'Unknown error'}`);
     } finally {
       setUploadingImage(false);
     }
