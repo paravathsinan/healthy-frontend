@@ -136,6 +136,16 @@ function TrackOrderContent() {
     }
   }, [searchParams]);
 
+  // Smooth scroll to results once loaded
+  useEffect(() => {
+    if (order && !loading) {
+      const scrollTimer = setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 150);
+      return () => clearTimeout(scrollTimer);
+    }
+  }, [order, loading]);
+
   // Format timestamp for display
   const formatTime = (isoString: string | null) => {
     if (!isoString) return null;
@@ -268,14 +278,16 @@ function TrackOrderContent() {
         {/* Loading Skeleton */}
         {loading && <TrackOrderSkeleton />}
 
+        {/* Static Scroll Anchor */}
+        <div ref={resultsRef} className="scroll-mt-24" />
+
         {/* Order Results */}
         <AnimatePresence>
           {!loading && order && (
             <motion.div
-              ref={resultsRef}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-8 scroll-mt-8"
+              className="space-y-8"
             >
               {/* Status Tracker */}
               <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-black/5 border border-gray-100 overflow-hidden">

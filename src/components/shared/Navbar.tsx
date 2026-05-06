@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, ShoppingCart, Heart, Menu, Truck, ChevronDown, X, ChevronRight, User } from "lucide-react";
-import { Facebook, Instagram, Linkedin, Youtube } from "@/components/shared/Icons";
+import { Facebook, Instagram, Youtube } from "@/components/shared/Icons";
 import { useCartStore } from "@/store/useCartStore";
 import { CartDrawer, GlobalMobileCart } from "@/components/cart/CartDrawer";
 import { 
@@ -32,12 +32,14 @@ const MobileMenu = ({
   isOpen, 
   setIsOpen, 
   categories, 
+  loading,
   activeCategory, 
   setActiveCategory 
 }: { 
   isOpen: boolean; 
   setIsOpen: (open: boolean) => void;
   categories: any[];
+  loading: boolean;
   activeCategory: string | null;
   setActiveCategory: (cat: string | null) => void;
 }) => (
@@ -67,7 +69,7 @@ const MobileMenu = ({
       {/* Navigation Items */}
       <div className="flex-1 overflow-y-auto">
         <div className="flex flex-col">
-          {STATIC_NAV_LINKS.map((link) => (
+          {STATIC_NAV_LINKS.filter(link => link.name !== "Gifting").map((link) => (
             <div key={link.name} className="relative">
               <div className="flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 transition-colors">
                 {/* Main Link/Text */}
@@ -97,7 +99,9 @@ const MobileMenu = ({
               {/* Sub-menu (Categories) */}
               {link.isDynamic && activeCategory === link.name && (
                 <div className="bg-gray-50/50 border-b border-gray-100 overflow-hidden animate-in slide-in-from-top-2 duration-300">
-                  {categories.length > 0 ? (
+                  {loading ? (
+                    <div className="px-12 py-4 text-[13px] text-gray-400 font-medium italic">Loading categories...</div>
+                  ) : categories.length > 0 ? (
                     categories.map((cat) => (
                       <Link 
                         key={cat.id}
@@ -109,7 +113,7 @@ const MobileMenu = ({
                       </Link>
                     ))
                   ) : (
-                    <div className="px-12 py-4 text-[13px] text-gray-400 font-medium italic">Loading categories...</div>
+                    <div className="px-12 py-4 text-[13px] text-gray-400 font-medium italic">No categories available</div>
                   )}
                 </div>
               )}
@@ -136,12 +140,14 @@ const MobileMenu = ({
           <Link href="#" className="text-gray-900 hover:text-[#006837] transition-colors">
             <Facebook className="h-5 w-5" />
           </Link>
-          <Link href="#" className="text-gray-900 hover:text-[#006837] transition-colors">
+          <a 
+            href="https://www.instagram.com/healthy_dates_and_nuts/" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-gray-900 hover:text-[#006837] transition-colors"
+          >
             <Instagram className="h-5 w-5" />
-          </Link>
-          <Link href="#" className="text-gray-900 hover:text-[#006837] transition-colors">
-            <Linkedin className="h-5 w-5" />
-          </Link>
+          </a>
           <Link href="#" className="text-gray-900 hover:text-[#006837] transition-colors">
             <Youtube className="h-5 w-5" />
           </Link>
@@ -197,12 +203,14 @@ export const Navbar = () => {
               <Link href="#" className="hover:opacity-70 transition-opacity">
                 <Facebook className="w-4 h-4" />
               </Link>
-              <Link href="#" className="hover:opacity-70 transition-opacity">
+              <a 
+                href="https://www.instagram.com/healthy_dates_and_nuts/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="hover:opacity-70 transition-opacity"
+              >
                 <Instagram className="w-4 h-4" />
-              </Link>
-              <Link href="#" className="hover:opacity-70 transition-opacity">
-                <Linkedin className="w-4 h-4" />
-              </Link>
+              </a>
               <Link href="#" className="hover:opacity-70 transition-opacity">
                 <Youtube className="w-4 h-4" />
               </Link>
@@ -223,6 +231,7 @@ export const Navbar = () => {
             isOpen={isMobileMenuOpen} 
             setIsOpen={setIsMobileMenuOpen}
             categories={categories}
+            loading={categoriesLoading}
             activeCategory={activeMobileCategory}
             setActiveCategory={setActiveMobileCategory}
           />
@@ -270,9 +279,9 @@ export const Navbar = () => {
                 <li key={link.name} className="group relative">
                   <Link href={link.href} className="text-[15px] text-gray-800 hover:text-black flex items-center gap-1 py-4">
                     {link.name} 
-                    {link.isDynamic && <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" />}
+                    {link.isDynamic && categories.length > 0 && <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" />}
                   </Link>
-                  {link.isDynamic && (
+                  {link.isDynamic && categories.length > 0 && (
                     <div className="absolute top-full left-1/2 -translate-x-1/2 w-40 bg-white shadow-2xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 border border-gray-100">
                       {categories.map((cat) => (
                         <Link key={cat.id} href={`/category/${cat.slug}`} className="block px-4 py-2 text-[13px] text-gray-700 hover:bg-gray-50">{cat.name}</Link>
@@ -317,6 +326,7 @@ export const Navbar = () => {
                 isOpen={isMobileMenuOpen} 
                 setIsOpen={setIsMobileMenuOpen}
                 categories={categories}
+                loading={categoriesLoading}
                 activeCategory={activeMobileCategory}
                 setActiveCategory={setActiveMobileCategory}
               />

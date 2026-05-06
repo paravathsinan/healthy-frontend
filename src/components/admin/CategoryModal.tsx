@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import api from "@/lib/api";
-import { Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 
@@ -21,6 +21,7 @@ interface CategoryModalProps {
 export function CategoryModal({ isOpen, onClose, category, onSuccess }: CategoryModalProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -43,6 +44,44 @@ export function CategoryModal({ isOpen, onClose, category, onSuccess }: Category
       });
     }
   }, [category, isOpen]);
+
+  /**
+   * Uploads directly to Cloudinary using a signed token from our backend.
+   * No Base64 — the raw file goes straight to Cloudinary, only the URL comes back.
+   */
+  const uploadToCloudinary = async (file: File | null) => {
+    if (!file) return;
+    const folder = 'dates_nuts/categories';
+    setUploadingImage(true);
+
+    try {
+      // 1. Get a signed upload token from the backend
+      const { data: sig } = await api.get(`/cloudinary-signature/?folder=${folder}`);
+
+      // 2. Build multipart form for Cloudinary
+      const form = new FormData();
+      form.append('file', file);
+      form.append('api_key', sig.api_key);
+      form.append('timestamp', sig.timestamp);
+      form.append('signature', sig.signature);
+      form.append('folder', sig.folder);
+
+      // 3. POST directly to Cloudinary — no Django relay, no size limit issues
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${sig.cloud_name}/image/upload`,
+        { method: 'POST', body: form }
+      );
+      const result = await res.json();
+
+      if (!result.secure_url) throw new Error(result.error?.message || 'Upload failed');
+
+      setFormData(prev => ({ ...prev, image_url: result.secure_url }));
+    } catch (err: any) {
+      toast.error(`Image upload failed: ${err.message || 'Unknown error'}`);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,9 +138,14 @@ export function CategoryModal({ isOpen, onClose, category, onSuccess }: Category
             <Label className="text-[11px] font-bold uppercase tracking-widest text-gray-600">Category Image</Label>
             <div 
               className="group relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 hover:bg-white hover:border-[#006837] transition-all cursor-pointer overflow-hidden"
-              onClick={() => document.getElementById('category-image-upload')?.click()}
+              onClick={() => !uploadingImage && document.getElementById('category-image-upload')?.click()}
             >
-              {formData.image_url ? (
+              {uploadingImage ? (
+                <div className="flex flex-col items-center gap-3">
+                  <div className="h-7 w-7 border-2 border-[#006837]/30 border-t-[#006837] rounded-full animate-spin" />
+                  <p className="text-xs font-bold text-gray-400">Uploading to Cloudinary…</p>
+                </div>
+              ) : formData.image_url ? (
                 <div className="relative w-full h-full p-4">
                   <img 
                     src={formData.image_url} 
@@ -128,16 +172,7 @@ export function CategoryModal({ isOpen, onClose, category, onSuccess }: Category
                 type="file" 
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                      setFormData({ ...formData, image_url: reader.result as string });
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                }}
+                onChange={(e) => uploadToCloudinary(e.target.files?.[0] || null)}
               />
             </div>
           </div>
@@ -167,9 +202,9 @@ export function CategoryModal({ isOpen, onClose, category, onSuccess }: Category
             </Button>
             <Button 
               type="submit" 
-              disabled={loading}
+              disabled={loading || uploadingImage}
               loading={loading}
-              className="rounded-full px-12 py-6 bg-[#006837] text-white font-bold hover:bg-black transition-all shadow-lg shadow-[#006837]/20 flex-1 min-w-[180px]"
+              className="rounded-full px-12 py-6 bg-[#006837] text-white font-bold hover:bg-black transition-all shadow-lg shadow-[#006837]/20 flex-1 min-w-[180px] disabled:opacity-60"
             >
               {loading 
                 ? (category ? "Updating..." : "Creating...") 

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { getFilterOptions } from '@/lib/api';
 
 interface FilterDropdownProps {
   label: string;
@@ -44,18 +45,37 @@ const FilterDropdown = ({ label, isOpen, onToggle, children }: FilterDropdownPro
   );
 };
 
+interface FilterOptions {
+  availability: { in_stock: number; out_of_stock: number };
+  price: { min: number; max: number };
+  categories: { name: string; slug: string; product_count: number }[];
+  weights: { weight: string; product_count: number }[];
+}
+
 export const CategoryFilters = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const toggleDropdown = (label: string) => {
     setActiveDropdown(activeDropdown === label ? null : label);
   };
+
+  useEffect(() => {
+    getFilterOptions().then((data) => {
+      setFilterOptions(data);
+      setLoading(false);
+    });
+  }, []);
+
+  const maxPrice = filterOptions?.price.max ?? 0;
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-y-8 mb-12">
       <div className="flex flex-wrap items-center gap-6">
         <span className="text-[15px] text-gray-500 font-medium">Filter:</span>
         <div className="flex flex-wrap gap-2">
+
           {/* Availability */}
           <FilterDropdown 
             label="Availability" 
@@ -68,14 +88,27 @@ export const CategoryFilters = () => {
                 <button className="text-gray-900 underline underline-offset-4 hover:text-gray-600 transition-colors">Reset</button>
               </div>
               <div className="border-t border-gray-100 pt-5 space-y-4">
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <input type="checkbox" className="w-5 h-5 border-gray-300 rounded focus:ring-black accent-black" />
-                  <span className="text-[15px] text-gray-800 group-hover:text-black">In stock (18)</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <input type="checkbox" className="w-5 h-5 border-gray-300 rounded focus:ring-black accent-black" />
-                  <span className="text-[15px] text-gray-800 group-hover:text-black">Out of stock (11)</span>
-                </label>
+                {loading ? (
+                  <>
+                    <div className="h-5 w-32 bg-gray-100 rounded animate-pulse" />
+                    <div className="h-5 w-40 bg-gray-100 rounded animate-pulse" />
+                  </>
+                ) : (
+                  <>
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <input type="checkbox" className="w-5 h-5 border-gray-300 rounded focus:ring-black accent-black" />
+                      <span className="text-[15px] text-gray-800 group-hover:text-black">
+                        In stock ({filterOptions?.availability.in_stock ?? 0})
+                      </span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <input type="checkbox" className="w-5 h-5 border-gray-300 rounded focus:ring-black accent-black" />
+                      <span className="text-[15px] text-gray-800 group-hover:text-black">
+                        Out of stock ({filterOptions?.availability.out_of_stock ?? 0})
+                      </span>
+                    </label>
+                  </>
+                )}
               </div>
             </div>
           </FilterDropdown>
@@ -88,8 +121,14 @@ export const CategoryFilters = () => {
           >
             <div className="p-5 space-y-6">
               <div className="flex justify-between items-center text-[15px]">
-                <span className="text-gray-900">The highest price is Rs. 8,410.00 INR</span>
-                <button className="text-gray-900 underline underline-offset-4 hover:text-gray-600 transition-colors shrink-0">Reset</button>
+                {loading ? (
+                  <div className="h-4 w-48 bg-gray-100 rounded animate-pulse" />
+                ) : (
+                  <span className="text-gray-900">
+                    The highest price is ₹{maxPrice.toLocaleString('en-IN')}
+                  </span>
+                )}
+                <button className="text-gray-900 underline underline-offset-4 hover:text-gray-600 transition-colors shrink-0 ml-3">Reset</button>
               </div>
               <div className="border-t border-gray-100 pt-6 space-y-8">
                 <div className="flex items-center gap-4">
@@ -106,12 +145,12 @@ export const CategoryFilters = () => {
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">₹</span>
                     <input 
                       type="number" 
-                      placeholder="8410" 
+                      placeholder={loading ? '...' : String(Math.floor(maxPrice))}
                       className="w-full pl-8 pr-3 py-2.5 border border-gray-200 rounded focus:border-black focus:ring-1 focus:ring-black outline-none text-[15px]"
                     />
                   </div>
                 </div>
-                {/* Range Slider Mockup */}
+                {/* Range Slider */}
                 <div className="relative h-1 bg-black rounded-full mx-1">
                   <div className="absolute -top-1.5 left-0 w-4 h-4 bg-white border-2 border-black rounded-full cursor-pointer shadow-sm" />
                   <div className="absolute -top-1.5 right-0 w-4 h-4 bg-white border-2 border-black rounded-full cursor-pointer shadow-sm" />
@@ -132,19 +171,29 @@ export const CategoryFilters = () => {
                 <button className="text-gray-900 underline underline-offset-4 hover:text-gray-600 transition-colors">Reset</button>
               </div>
               <div className="border-t border-gray-100 pt-5 space-y-4">
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <input type="checkbox" className="w-5 h-5 border-gray-300 rounded focus:ring-black accent-black" />
-                  <span className="text-[15px] text-gray-800 group-hover:text-black">Dates (24)</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <input type="checkbox" className="w-5 h-5 border-gray-300 rounded focus:ring-black accent-black" />
-                  <span className="text-[15px] text-gray-800 group-hover:text-black">Nuts & Seeds (3)</span>
-                </label>
+                {loading ? (
+                  <>
+                    <div className="h-5 w-28 bg-gray-100 rounded animate-pulse" />
+                    <div className="h-5 w-36 bg-gray-100 rounded animate-pulse" />
+                    <div className="h-5 w-24 bg-gray-100 rounded animate-pulse" />
+                  </>
+                ) : filterOptions?.categories.length === 0 ? (
+                  <p className="text-sm text-gray-400">No categories found</p>
+                ) : (
+                  filterOptions?.categories.map((cat) => (
+                    <label key={cat.slug} className="flex items-center gap-3 cursor-pointer group">
+                      <input type="checkbox" className="w-5 h-5 border-gray-300 rounded focus:ring-black accent-black" />
+                      <span className="text-[15px] text-gray-800 group-hover:text-black">
+                        {cat.name} ({cat.product_count})
+                      </span>
+                    </label>
+                  ))
+                )}
               </div>
             </div>
           </FilterDropdown>
 
-          {/* Available In */}
+          {/* Available In (weight variants) */}
           <FilterDropdown 
             label="Available in" 
             isOpen={activeDropdown === 'Available in'} 
@@ -156,18 +205,28 @@ export const CategoryFilters = () => {
                 <button className="text-gray-900 underline underline-offset-4 hover:text-gray-600 transition-colors">Reset</button>
               </div>
               <div className="border-t border-gray-100 pt-5 max-h-[300px] overflow-y-auto custom-scrollbar space-y-4 pr-2">
-                {[
-                  '250 G (20)', '250G (1)', '500 G (20)', '500G (1)', 
-                  '1000 G (20)', '1000G (1)', '5000 G (7)', '10000 G (1)'
-                ].map((item) => (
-                  <label key={item} className="flex items-center gap-3 cursor-pointer group">
-                    <input type="checkbox" className="w-5 h-5 border-gray-300 rounded focus:ring-black accent-black" />
-                    <span className="text-[15px] text-gray-800 group-hover:text-black">{item}</span>
-                  </label>
-                ))}
+                {loading ? (
+                  <>
+                    {[1,2,3,4].map(i => (
+                      <div key={i} className="h-5 w-32 bg-gray-100 rounded animate-pulse" />
+                    ))}
+                  </>
+                ) : filterOptions?.weights.length === 0 ? (
+                  <p className="text-sm text-gray-400">No weights found</p>
+                ) : (
+                  filterOptions?.weights.map((w) => (
+                    <label key={w.weight} className="flex items-center gap-3 cursor-pointer group">
+                      <input type="checkbox" className="w-5 h-5 border-gray-300 rounded focus:ring-black accent-black" />
+                      <span className="text-[15px] text-gray-800 group-hover:text-black">
+                        {w.weight} ({w.product_count})
+                      </span>
+                    </label>
+                  ))
+                )}
               </div>
             </div>
           </FilterDropdown>
+
         </div>
       </div>
       

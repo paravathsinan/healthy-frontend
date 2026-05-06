@@ -52,37 +52,37 @@ function TrendingProductsContent() {
       <ProductTabs />
 
       <div className="space-y-8">
-        <div className="flex justify-between items-end">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
           <div className="space-y-0.5">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-black text-gray-900 tracking-tight font-heading">
+              <h1 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight font-heading">
                 Trending Now Gallery
               </h1>
             </div>
             <p className="text-[13px] text-gray-500 font-medium max-w-md">Manage products currently highlighted in the "Trending Now" section of your storefront.</p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="relative group">
+          <div className="flex flex-row items-center gap-2 sm:gap-3 w-full md:w-auto">
+            <div className="relative group flex-1 min-w-0">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 group-focus-within:text-[#006837] transition-colors" />
               <input
                 type="text"
-                placeholder="Search trending..."
+                placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2.5 rounded-full border border-gray-200 bg-white text-[13px] font-bold text-gray-900 focus:outline-none focus:border-[#006837] focus:ring-4 focus:ring-[#006837]/5 w-64 shadow-sm transition-all placeholder:text-gray-500"
+                className="pl-10 pr-4 py-2.5 rounded-full border border-gray-200 bg-white text-[13px] font-bold text-gray-900 focus:outline-none focus:border-[#006837] focus:ring-4 focus:ring-[#006837]/5 w-full sm:w-64 shadow-sm transition-all placeholder:text-gray-500"
               />
-
             </div>
-            <CategoryFilter currentCategory={categorySlug} basePath="/admin/products/trending" />
-
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-[#006837] text-white px-6 py-2.5 rounded-full text-[13px] font-bold hover:bg-black transition-all shadow-md shadow-[#006837]/10 flex items-center gap-2 active:scale-95 whitespace-nowrap"
-            >
-
-              <Plus className="h-4 w-4" />
-              Add Trending
-            </button>
+            <div className="flex flex-row items-center gap-2 shrink-0">
+              <CategoryFilter currentCategory={categorySlug} basePath="/admin/products/trending" />
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-[#006837] text-white px-4 sm:px-6 py-2.5 rounded-full text-[13px] font-bold hover:bg-black transition-all shadow-md shadow-[#006837]/10 flex items-center justify-center gap-2 active:scale-95 whitespace-nowrap"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Add Trending</span>
+                <span className="sm:hidden">Add</span>
+              </button>
+            </div>
           </div>
         </div>
 

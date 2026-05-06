@@ -81,6 +81,8 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(!product);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -97,6 +99,50 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
     image: "",
     gallery: [] as string[],
   });
+
+  /**
+   * Uploads a file directly to Cloudinary using a server-generated signature.
+   * This bypasses Django's body size limit — only the resulting URL reaches the backend.
+   */
+  const uploadToCloudinary = async (file: File | null, target: 'primary' | 'gallery') => {
+    if (!file) return;
+    const folder = 'dates_nuts/products';
+    if (target === 'primary') setUploadingImage(true);
+    else setUploadingGallery(true);
+
+    try {
+      // 1. Get a signed upload token from our backend
+      const { data: sig } = await api.get(`/cloudinary-signature/?folder=${folder}`);
+
+      // 2. Build the multipart form for Cloudinary
+      const form = new FormData();
+      form.append('file', file);
+      form.append('api_key', sig.api_key);
+      form.append('timestamp', sig.timestamp);
+      form.append('signature', sig.signature);
+      form.append('folder', sig.folder);
+
+      // 3. POST directly to Cloudinary — no base64 encoding, no server relay
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${sig.cloud_name}/image/upload`,
+        { method: 'POST', body: form }
+      );
+      const result = await res.json();
+
+      if (!result.secure_url) throw new Error(result.error?.message || 'Upload failed');
+
+      if (target === 'primary') {
+        setFormData(prev => ({ ...prev, image: result.secure_url }));
+      } else {
+        setFormData(prev => ({ ...prev, gallery: [...prev.gallery, result.secure_url].slice(0, 3) }));
+      }
+    } catch (err: any) {
+      toast.error(`Image upload failed: ${err.message || 'Unknown error'}`);
+    } finally {
+      if (target === 'primary') setUploadingImage(false);
+      else setUploadingGallery(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen && product && categories.length > 0) {
@@ -461,33 +507,68 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
                 <div className="space-y-6 pt-6 border-t border-gray-50">
                   <div className="flex items-center gap-3 text-gray-400"><ImageIcon size={16} /><span className="text-[10px] font-bold uppercase tracking-widest">Product Media</span></div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div className={`group relative aspect-square border-2 border-dashed border-gray-100 rounded-2xl bg-gray-50/50 flex flex-col items-center justify-center p-2 cursor-pointer ${isEditing ? 'hover:border-[#006837]' : ''}`} onClick={() => isEditing && document.getElementById('primary-upload')?.click()}>
-                      {formData.image ? <img src={formData.image} alt="Primary" className="w-full h-full object-contain" /> : <Plus className="h-6 w-6 text-gray-300" />}
-                      <input id="primary-upload" type="file" accept="image/*" className="hidden" onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () => setFormData({ ...formData, image: reader.result as string });
-                          reader.readAsDataURL(file);
-                        }
-                      }} />
+                    {/* Primary Image */}
+                    <div
+                      className={`group relative aspect-square border-2 border-dashed border-gray-100 rounded-2xl bg-gray-50/50 flex flex-col items-center justify-center p-2 cursor-pointer ${isEditing ? 'hover:border-[#006837]' : ''}`}
+                      onClick={() => isEditing && document.getElementById('primary-upload')?.click()}
+                    >
+                      {uploadingImage ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="h-5 w-5 border-2 border-[#006837]/30 border-t-[#006837] rounded-full animate-spin" />
+                          <span className="text-[10px] text-gray-400 font-medium">Uploading…</span>
+                        </div>
+                      ) : formData.image ? (
+                        <img src={formData.image} alt="Primary" className="w-full h-full object-contain" />
+                      ) : (
+                        <Plus className="h-6 w-6 text-gray-300" />
+                      )}
+                      <input
+                        id="primary-upload"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => uploadToCloudinary(e.target.files?.[0] || null, 'primary')}
+                      />
                     </div>
+
+                    {/* Gallery Images */}
                     {formData.gallery.map((img, idx) => (
                       <div key={idx} className="relative aspect-square rounded-2xl bg-white border border-gray-100 overflow-hidden group">
                         <img src={img} className="w-full h-full object-contain" alt="" />
-                        {isEditing && <button type="button" onClick={() => setFormData({...formData, gallery: formData.gallery.filter((_, i) => i !== idx)})} className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100"><X size={10} /></button>}
+                        {isEditing && (
+                          <button
+                            type="button"
+                            onClick={() => setFormData({...formData, gallery: formData.gallery.filter((_, i) => i !== idx)})}
+                            className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100"
+                          >
+                            <X size={10} />
+                          </button>
+                        )}
                       </div>
                     ))}
+
+                    {/* Add Gallery Slot */}
                     {isEditing && formData.gallery.length < 3 && (
-                      <div className="aspect-square border-2 border-dashed border-gray-100 rounded-2xl bg-gray-50/50 hover:bg-white flex items-center justify-center cursor-pointer" onClick={() => document.getElementById('gallery-upload')?.click()}>
-                        <Plus className="h-6 w-6 text-gray-300" /><input id="gallery-upload" type="file" accept="image/*" multiple className="hidden" onChange={(e) => {
-                          const files = Array.from(e.target.files || []);
-                          files.forEach(f => {
-                            const r = new FileReader();
-                            r.onloadend = () => setFormData(prev => ({...prev, gallery: [...prev.gallery, r.result as string].slice(0, 3)}));
-                            r.readAsDataURL(f);
-                          });
-                        }} />
+                      <div
+                        className="aspect-square border-2 border-dashed border-gray-100 rounded-2xl bg-gray-50/50 hover:bg-white flex items-center justify-center cursor-pointer"
+                        onClick={() => document.getElementById('gallery-upload')?.click()}
+                      >
+                        {uploadingGallery ? (
+                          <div className="h-5 w-5 border-2 border-[#006837]/30 border-t-[#006837] rounded-full animate-spin" />
+                        ) : (
+                          <Plus className="h-6 w-6 text-gray-300" />
+                        )}
+                        <input
+                          id="gallery-upload"
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={(e) => {
+                            const files = Array.from(e.target.files || []);
+                            files.forEach(f => uploadToCloudinary(f, 'gallery'));
+                          }}
+                        />
                       </div>
                     )}
                   </div>

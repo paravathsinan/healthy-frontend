@@ -87,6 +87,20 @@ export const getCategories = async () => {
   }
 };
 
+export const getPopularCategories = async () => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/categories/popular/`, {
+      next: { revalidate: 60 } // Cache for 1 minute
+    });
+    if (!res.ok) throw new Error('Network response was not ok');
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    const response = await api.get('/categories/popular/');
+    return response.data;
+  }
+};
+
 export const getProducts = async (params: any = {}) => {
   try {
     const queryString = new URLSearchParams(params).toString();
@@ -99,6 +113,15 @@ export const getProducts = async (params: any = {}) => {
   } catch (error) {
     const response = await api.get('/products/', { params });
     return response.data.results || response.data;
+  }
+};
+
+export const getFilterOptions = async () => {
+  try {
+    const response = await api.get('/products/filter-options/');
+    return response.data;
+  } catch (error) {
+    return null;
   }
 };
 
@@ -152,6 +175,11 @@ export const createOrder = async (orderData: any) => {
 
 export const getDashboardStats = async () => {
   const response = await api.get('/dashboard-stats/');
+  return response.data;
+};
+
+export const getVisitors = async (page = 1, pageSize = 20) => {
+  const response = await api.get('/visitors/', { params: { page, page_size: pageSize } });
   return response.data;
 };
 

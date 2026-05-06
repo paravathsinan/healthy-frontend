@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/shared/Navbar";
 import { BottomNav } from "@/components/shared/BottomNav";
 import { Footer } from "@/components/shared/Footer";
+import { VisitorTracker } from "@/components/shared/VisitorTracker";
 
 export default function StorefrontLayout({
   children,
@@ -9,6 +10,8 @@ export default function StorefrontLayout({
 }) {
   return (
     <div className="min-h-screen bg-white">
+      {/* Tracks unique storefront visitors only — never admin pages */}
+      <VisitorTracker />
       <Navbar />
       <main>
         {children}
@@ -17,3 +20,4 @@ export default function StorefrontLayout({
     </div>
   );
 }
+

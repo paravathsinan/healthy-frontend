@@ -1,13 +1,25 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, Loader2, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { getProducts } from "@/lib/api";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+
+const PLACEHOLDER_TERMS = [
+  "Ajwa dates…",
+  "Medjool King…",
+  "almonds…",
+  "pistachios…",
+  "saffron…",
+  "cashews…",
+  "gift boxes…",
+  "dry fruits…",
+  "walnuts…",
+];
 
 interface SearchBoxProps {
   isMobile?: boolean;
@@ -18,6 +30,8 @@ export const SearchBox = ({ isMobile }: SearchBoxProps) => {
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [placeholderVisible, setPlaceholderVisible] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -30,6 +44,19 @@ export const SearchBox = ({ isMobile }: SearchBoxProps) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Cycle placeholder every 2.5s with a fade-out/fade-in transition
+  useEffect(() => {
+    if (query) return;
+    const interval = setInterval(() => {
+      setPlaceholderVisible(false);
+      setTimeout(() => {
+        setPlaceholderIndex(i => (i + 1) % PLACEHOLDER_TERMS.length);
+        setPlaceholderVisible(true);
+      }, 300);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [query]);
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -69,13 +96,25 @@ export const SearchBox = ({ isMobile }: SearchBoxProps) => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.length > 0 && setShowDropdown(true)}
-          placeholder="Search for..."
+          placeholder=""
           className={`w-full bg-[#F9F9F9] border border-gray-300 rounded-full outline-none transition-all text-black
             ${isMobile 
-              ? 'py-2.5 pl-10 pr-4 text-[13px] focus:border-[#006837] placeholder:text-black/60' 
-              : 'py-3.5 pl-14 pr-12 focus:ring-4 focus:ring-[#006837]/5 focus:border-[#006837] shadow-sm placeholder:text-black/60'
+              ? 'py-2.5 pl-10 pr-4 text-[13px] focus:border-[#006837]' 
+              : 'py-3.5 pl-14 pr-12 focus:ring-4 focus:ring-[#006837]/5 focus:border-[#006837] shadow-sm'
             }`}
         />
+
+        {/* Animated cycling placeholder — hidden when user starts typing */}
+        {!query && (
+          <span
+            className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-black/50 select-none transition-opacity duration-300
+              ${isMobile ? 'left-10 text-[13px]' : 'left-14 text-[14px]'}
+              ${placeholderVisible ? 'opacity-100' : 'opacity-0'}`}
+          >
+            Search for&nbsp;<span className="font-medium">{PLACEHOLDER_TERMS[placeholderIndex]}</span>
+          </span>
+        )}
+
         <Search className={`absolute text-gray-400 transition-colors group-focus-within:text-[#006837] top-1/2 -translate-y-1/2
           ${isMobile ? 'left-3.5 h-4 w-4' : 'left-5 h-6 w-6'}`} 
         />
