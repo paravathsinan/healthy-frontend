@@ -181,8 +181,6 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
                   }
 
                   // 2. WhatsApp Number Validation
-                  const cleanPhone = phoneTrimmed.replace(/\s+/g, '');
-                  const phoneRegex = /^[+]?[0-9]{10,14}$/;
                   if (!phoneTrimmed) {
                     toast.error("Please enter your WhatsApp Number.", {
                       duration: 4000,
@@ -190,8 +188,12 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
                     });
                     return;
                   }
-                  if (!phoneRegex.test(cleanPhone)) {
-                    toast.error("Please enter a valid WhatsApp number (10-12 digits).", {
+
+                  const cleanPhone = phoneTrimmed.replace(/\D/g, ''); // Keep only numeric digits
+                  const isValidPhone = /^[0-9]{10}$/.test(cleanPhone) || /^91[0-9]{10}$/.test(cleanPhone);
+
+                  if (!isValidPhone) {
+                    toast.error("Please enter a valid WhatsApp number (10 digits or 12 digits starting with 91).", {
                       duration: 4000,
                       className: "rounded-2xl font-bold border-red-100 bg-red-50 text-red-600"
                     });
@@ -200,14 +202,14 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
 
                   // 3. Location / Address Validation
                   if (!addressTrimmed) {
-                    toast.error("Please enter your Delivery Location.", {
+                    toast.error("Please enter your delivery location", {
                       duration: 4000,
                       className: "rounded-2xl font-bold border-red-100 bg-red-50 text-red-600"
                     });
                     return;
                   }
                   if (addressTrimmed.length < 8) {
-                    toast.error("Please enter a more detailed delivery location (at least 8 characters).", {
+                    toast.error("Please enter a more detailed location (area, town, landmark)", {
                       duration: 4000,
                       className: "rounded-2xl font-bold border-red-100 bg-red-50 text-red-600"
                     });
