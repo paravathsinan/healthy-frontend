@@ -33,7 +33,7 @@ export const Footer = () => {
                 <a href="mailto:shoponline@healthydates.in" className="block hover:text-[#006837] hover:underline transition-colors duration-200 font-medium">shoponline@healthydates.in</a>
                 <a href="tel:+918157858977" className="block hover:text-[#006837] hover:underline transition-colors duration-200 font-medium">+91 8157858977</a>
                 <a 
-                  href="https://www.google.com/maps/search/?api=1&query=34W9%2BRVR%2C%2BMuttipalam%2BUpper%2C%2BMuttippalam%2BManjeri%2BKerala%2B676121" 
+                  href="https://maps.app.goo.gl/vBpFSy4xLAaytbqV7?g_st=aw" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="block pt-2 hover:text-[#006837] transition-colors duration-200 group leading-relaxed font-medium"

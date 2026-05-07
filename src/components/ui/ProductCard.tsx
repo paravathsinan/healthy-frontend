@@ -5,6 +5,8 @@ import Image from "next/image";
 import { Button } from "./button";
 import { getOptimizedImageUrl } from "@/lib/utils";
 
+import Link from "next/link";
+
 interface ProductCardProps {
   product: any;
   index: number;
@@ -21,9 +23,9 @@ const ProductCardBase = ({ product, index, onQuickView, onBuyNow, loadingId }: P
 
   return (
     <div className="group flex flex-col items-center text-center bg-white p-2 md:p-4 rounded-2xl border border-transparent hover:border-gray-50 transition-all">
-      <div 
+      <Link 
+        href={`/product/${product.slug}`}
         className="relative w-full aspect-square mb-4 md:mb-8 block cursor-pointer group"
-        onClick={() => isBuyNow ? onBuyNow(product) : onQuickView(product)}
       >
         {/* Badges Stack */}
         <div className="absolute top-2 md:top-4 left-2 md:left-4 z-10 flex flex-wrap gap-1 md:gap-1.5 max-w-[80%]">
@@ -76,14 +78,16 @@ const ProductCardBase = ({ product, index, onQuickView, onBuyNow, loadingId }: P
             priority={index < 4}
           />
         </div>
-      </div>
+      </Link>
       
       <div className="space-y-1.5 md:space-y-3 w-full px-1 md:px-2 flex-1 flex flex-col">
         <p className="text-[10px] md:text-[14px] text-gray-600 font-medium tracking-tight">
           {product.on_sale ? 'On Sale from ' : 'From '}Rs. {parseFloat(product.cheapest_variant_price).toFixed(2)}
         </p>
-        <h3 className="text-[13px] md:text-[18px] font-bold text-gray-900 leading-tight flex-1 line-clamp-2">
-          {product.name}
+        <h3 className="text-[13px] md:text-[18px] font-bold text-gray-900 leading-tight flex-1 line-clamp-2 hover:text-[#006837] transition-colors">
+          <Link href={`/product/${product.slug}`}>
+            {product.name}
+          </Link>
         </h3>
         <div className="pt-2 md:pt-4">
           {product.is_sold_out ? (

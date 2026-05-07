@@ -128,9 +128,9 @@ export default function AdminDashboard() {
   };
 
   const stats = [
-    { label: "Total Products", value: statsData?.product_count ?? products.length, icon: Package, color: "text-[#006837]", bg: "bg-[#006837]/10", clickable: false },
-    { label: "Categories", value: statsData?.category_count ?? categories.length, icon: List, color: "text-blue-600", bg: "bg-blue-50", clickable: false },
-    { label: "WhatsApp Clicks", value: statsData?.whatsapp_clicks ?? 0, icon: MessageCircle, color: "text-green-600", bg: "bg-green-50", clickable: false },
+    { label: "Total Products", value: statsData?.product_count ?? products.length, icon: Package, color: "text-[#006837]", bg: "bg-[#006837]/10", clickable: true, href: "/admin/products" },
+    { label: "Categories", value: statsData?.category_count ?? categories.length, icon: List, color: "text-blue-600", bg: "bg-blue-50", clickable: true, href: "/admin/categories" },
+    { label: "WhatsApp Clicks", value: statsData?.whatsapp_clicks ?? 0, icon: MessageCircle, color: "text-green-600", bg: "bg-green-50", clickable: true, href: "/admin/orders" },
     { label: "Total Visitors", value: statsData?.total_visitors ?? 0, icon: Users, color: "text-purple-600", bg: "bg-purple-50", clickable: true },
   ];
 
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
             return (
               <div
                 key={stat.label}
-                onClick={stat.clickable ? handleVisitorsToggle : undefined}
+                onClick={stat.href ? () => router.push(stat.href) : (stat.clickable ? handleVisitorsToggle : undefined)}
                 className={`bg-white p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border transition-all duration-300 shadow-sm flex flex-col gap-4 group ${
                   stat.clickable
                     ? "cursor-pointer hover:shadow-xl hover:shadow-black/5 select-none"
@@ -267,53 +267,77 @@ export default function AdminDashboard() {
                 {visitors.map((v, idx) => (
                   <div
                     key={v.visitor_id}
-                    className="flex flex-col md:grid md:grid-cols-[2rem_1fr_1fr_1fr_1fr] gap-2 md:gap-4 px-6 py-4 border-b border-gray-50/70 last:border-0 hover:bg-gray-50/40 transition-colors group"
+                    className="border-b border-gray-50/70 last:border-0 hover:bg-gray-50/40 transition-colors group"
                   >
-                    {/* Row number */}
-                    <div className="hidden md:flex items-center">
-                      <span className="text-[11px] font-bold text-gray-300">
-                        {(visitorsPage - 1) * 20 + idx + 1}
-                      </span>
+                    {/* ── Desktop row (grid) ── */}
+                    <div className="hidden md:grid md:grid-cols-[2rem_1fr_1fr_1fr_1fr] gap-4 px-6 py-4">
+                      <div className="flex items-center">
+                        <span className="text-[11px] font-bold text-gray-300">
+                          {(visitorsPage - 1) * 20 + idx + 1}
+                        </span>
+                      </div>
+                      {/* Visitor ID */}
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+                          <Users className="h-3.5 w-3.5 text-purple-500" />
+                        </div>
+                        <p className="text-[12px] font-black text-gray-900 font-mono">{v.id}</p>
+                      </div>
+                      {/* First Seen */}
+                      <div className="flex flex-col justify-center">
+                        <p className="text-[12px] font-bold text-gray-700">{formatDate(v.first_seen)}</p>
+                        <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
+                          <Clock className="h-3 w-3" /> {formatTime(v.first_seen)}
+                        </p>
+                      </div>
+                      {/* Last Seen */}
+                      <div className="flex flex-col justify-center">
+                        <p className="text-[12px] font-bold text-gray-700">{formatDate(v.last_seen)}</p>
+                        <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
+                          <Clock className="h-3 w-3" /> {formatTime(v.last_seen)}
+                        </p>
+                      </div>
+                      {/* Time Spent */}
+                      <div className="flex flex-col justify-center">
+                        <p className="text-[12px] font-bold text-[#006837] flex items-center gap-1">
+                          <Timer className="h-3.5 w-3.5" />
+                          {formatDuration(v.total_time_seconds)}
+                        </p>
+                        <p className="text-[10px] text-gray-400 mt-0.5">total on-site</p>
+                      </div>
                     </div>
 
-                    {/* Visitor ID */}
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+                    {/* ── Mobile card ── */}
+                    <div className="flex md:hidden items-start gap-3 px-4 py-4">
+                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0 mt-0.5">
                         <Users className="h-3.5 w-3.5 text-purple-500" />
                       </div>
-                      <div>
-                        <p className="text-[11px] md:text-[12px] font-black text-gray-900 font-mono">
-                          {v.id}
-                        </p>
-                        <p className="text-[10px] text-gray-400 font-medium md:hidden">
-                          First: {formatDate(v.first_seen)}
-                        </p>
+                      <div className="flex-1 min-w-0 space-y-2">
+                        {/* ID + row number */}
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-[11px] font-black text-gray-900 font-mono truncate">{v.id}</p>
+                          <span className="text-[10px] font-bold text-gray-300 shrink-0">#{(visitorsPage - 1) * 20 + idx + 1}</span>
+                        </div>
+                        {/* Dates row */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-0.5">First Seen</p>
+                            <p className="text-[11px] font-bold text-gray-700">{formatDate(v.first_seen)}</p>
+                            <p className="text-[10px] text-gray-400">{formatTime(v.first_seen)}</p>
+                          </div>
+                          <div>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Last Seen</p>
+                            <p className="text-[11px] font-bold text-gray-700">{formatDate(v.last_seen)}</p>
+                            <p className="text-[10px] text-gray-400">{formatTime(v.last_seen)}</p>
+                          </div>
+                        </div>
+                        {/* Time Spent */}
+                        <div className="flex items-center gap-1.5">
+                          <Timer className="h-3 w-3 text-[#006837]" />
+                          <span className="text-[11px] font-bold text-[#006837]">{formatDuration(v.total_time_seconds)}</span>
+                          <span className="text-[10px] text-gray-400">total on-site</span>
+                        </div>
                       </div>
-                    </div>
-
-                    {/* First Seen */}
-                    <div className="hidden md:flex flex-col justify-center">
-                      <p className="text-[12px] font-bold text-gray-700">{formatDate(v.first_seen)}</p>
-                      <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
-                        <Clock className="h-3 w-3" /> {formatTime(v.first_seen)}
-                      </p>
-                    </div>
-
-                    {/* Last Seen */}
-                    <div className="hidden md:flex flex-col justify-center">
-                      <p className="text-[12px] font-bold text-gray-700">{formatDate(v.last_seen)}</p>
-                      <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
-                        <Clock className="h-3 w-3" /> {formatTime(v.last_seen)}
-                      </p>
-                    </div>
-
-                    {/* Time Spent */}
-                    <div className="hidden md:flex flex-col justify-center">
-                      <p className="text-[12px] font-bold text-[#006837] flex items-center gap-1">
-                        <Timer className="h-3.5 w-3.5" />
-                        {formatDuration(v.total_time_seconds)}
-                      </p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">total on-site</p>
                     </div>
                   </div>
                 ))}

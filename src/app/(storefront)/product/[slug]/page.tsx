@@ -3,8 +3,9 @@ import ProductView from "@/components/shared/ProductView";
 import ProductSchema from "@/components/shared/ProductSchema";
 import { Metadata } from "next";
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const product = await getProductBySlug(params.slug).catch(() => null);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug).catch(() => null);
   if (!product) return { title: "Product Not Found" };
 
   const primaryImage = product.images?.find((img: any) => img.is_primary)?.image_url || product.images?.[0]?.image_url;
@@ -19,13 +20,14 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       type: 'website',
     },
     alternates: {
-      canonical: `https://yourdomain.com/product/${params.slug}`,
+      canonical: `https://yourdomain.com/product/${slug}`,
     },
   };
 }
 
-export default async function ProductPage({ params }: { params: { slug: string } }) {
-  const product = await getProductBySlug(params.slug).catch(() => null);
+export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug).catch(() => null);
 
   if (!product) {
     return (

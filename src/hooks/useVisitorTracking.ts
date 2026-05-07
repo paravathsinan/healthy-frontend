@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 
 const VISITOR_ID_KEY = "dn_visitor_id";
-const VISITOR_TRACKED_KEY = "dn_visitor_tracked";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 /**
@@ -50,22 +49,16 @@ export function useVisitorTracking() {
 
     const currentVisitorId = visitorId;
 
-    // Register the visit (creates row on first visit, updates last_seen on return)
-    if (localStorage.getItem(VISITOR_TRACKED_KEY) !== "true") {
-      fetch(`${API_URL}/api/v1/track-visit/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ visitor_id: currentVisitorId, session_seconds: 0 }),
-      })
-        .then((res) => {
-          if (res.ok || res.status === 200 || res.status === 201) {
-            localStorage.setItem(VISITOR_TRACKED_KEY, "true");
-          }
-        })
-        .catch(() => {
-          // Network error — retry on next visit
-        });
-    }
+    // Ping the backend on every page load so last_seen stays accurate.
+    // The backend uses get_or_create — it only counts this browser as a
+    // new visitor once (created=True), but updates last_seen every time.
+    fetch(`${API_URL}/api/v1/track-visit/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ visitor_id: currentVisitorId, session_seconds: 0 }),
+    }).catch(() => {
+      // Network error — silent fail, retry on next page load
+    });
 
     /**
      * Sends the elapsed session seconds to the backend.

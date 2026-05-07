@@ -50,14 +50,14 @@ export default function AdminLayout({
     // Must be more horizontal than vertical, and at least 60px
     if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
 
-    if (dx > 0 && touchStartX.current < 40) {
-      // Swiped right from left edge → open
+    if (dx > 0 && touchStartX.current < 80) {
+      // Swiped right starting from left side (bypasses browser native edge gestures) → open
       setIsSidebarOpen(true);
-    } else if (dx < 0) {
-      // Swiped left → close
+    } else if (dx < 0 && isSidebarOpen) {
+      // Swiped left anywhere when open → close
       setIsSidebarOpen(false);
     }
-  }, []);
+  }, [isSidebarOpen]);
 
   useEffect(() => {
     document.addEventListener('touchstart', handleTouchStart, { passive: true });

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingCart, Heart, Menu, Truck, ChevronDown, X, ChevronRight, User } from "lucide-react";
+import { Search, ShoppingCart, Heart, Menu, Truck, ChevronDown, X, ChevronRight, User, MapPin, Phone } from "lucide-react";
 import { Facebook, Instagram, Youtube } from "@/components/shared/Icons";
 import { useCartStore } from "@/store/useCartStore";
 import { CartDrawer, GlobalMobileCart } from "@/components/cart/CartDrawer";
@@ -134,9 +134,29 @@ const MobileMenu = ({
         </div>
       </div>
 
-      {/* Social Footer */}
-      <div className="p-6 border-t border-gray-100 bg-white mt-auto">
-        <div className="flex items-center gap-6">
+      {/* Social & Contact Footer */}
+      <div className="p-6 border-t border-gray-100 bg-white mt-auto space-y-4">
+        {/* Quick Contacts */}
+        <div className="space-y-2.5 pb-2">
+          <a 
+            href="tel:+918157858977" 
+            className="flex items-center gap-2.5 text-[14px] font-bold text-gray-800 hover:text-[#006837] transition-colors"
+          >
+            <Phone className="w-4.5 h-4.5 text-gray-400 shrink-0" />
+            <span>+91 8157858977</span>
+          </a>
+          <a 
+            href="https://maps.app.goo.gl/vBpFSy4xLAaytbqV7?g_st=aw" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-start gap-2.5 text-[14px] font-bold text-gray-800 hover:text-[#006837] transition-colors leading-snug"
+          >
+            <MapPin className="w-4.5 h-4.5 text-gray-400 shrink-0 mt-0.5" />
+            <span>Muttippalam, Manjeri, Kerala 676121</span>
+          </a>
+        </div>
+
+        <div className="flex items-center gap-6 border-t border-gray-50 pt-4">
           <Link href="#" className="text-gray-900 hover:text-[#006837] transition-colors">
             <Facebook className="h-5 w-5" />
           </Link>

@@ -2,6 +2,7 @@ import { Navbar } from "@/components/shared/Navbar";
 import { BottomNav } from "@/components/shared/BottomNav";
 import { Footer } from "@/components/shared/Footer";
 import { VisitorTracker } from "@/components/shared/VisitorTracker";
+import { WhatsAppFloatingButton } from "@/components/shared/WhatsAppFloatingButton";
 
 export default function StorefrontLayout({
   children,
@@ -17,6 +18,8 @@ export default function StorefrontLayout({
         {children}
       </main>
       <Footer />
+      {/* Floating WhatsApp Action Button (FAB) for Instant Customer Support */}
+      <WhatsAppFloatingButton />
     </div>
   );
 }

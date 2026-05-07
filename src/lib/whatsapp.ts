@@ -34,9 +34,9 @@ Please let me know the payment details and delivery time.`;
   window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
 };
 
-export const sendWhatsAppCartOrder = (cartItems: CartItem[], totalPrice: number, userDetails: { name: string; address: string; phone: string }, orderNumber?: string) => {
-  const businessPhoneNumber = "918157858977"; // Updated business number
-  
+export const buildWhatsAppUrl = (cartItems: CartItem[], totalPrice: number, userDetails: { name: string; address: string; phone: string }, orderNumber?: string): string => {
+  const businessPhoneNumber = "918157858977";
+
   const itemsText = cartItems.map((item, index) => (
     `${index + 1}. *${item.name}*\n   Size: ${item.weight}\n   Qty: ${item.quantity} x ₹${item.price} = ₹${(item.quantity * item.price).toFixed(2)}`
   )).join('\n\n');
@@ -54,6 +54,9 @@ ${itemsText}
 
 Please confirm this order and share the payment details.`;
 
-  const encodedMessage = encodeURIComponent(message);
-  window.open(`https://wa.me/${businessPhoneNumber}?text=${encodedMessage}`, '_blank');
+  return `https://wa.me/${businessPhoneNumber}?text=${encodeURIComponent(message)}`;
+};
+
+export const sendWhatsAppCartOrder = (cartItems: CartItem[], totalPrice: number, userDetails: { name: string; address: string; phone: string }, orderNumber?: string) => {
+  window.open(buildWhatsAppUrl(cartItems, totalPrice, userDetails, orderNumber), '_blank');
 };

@@ -129,80 +129,92 @@ export default function AdminCategoriesPage() {
               </div>
             </div>
           ))
+        ) : filteredCategories.length === 0 ? (
+          <div className="col-span-full bg-white rounded-[2.5rem] p-12 sm:p-20 text-center border-2 border-dashed border-gray-100 animate-in fade-in duration-500">
+            <div 
+              onClick={handleAdd}
+              className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 cursor-pointer hover:bg-[#006837]/10 hover:text-[#006837] active:scale-95 transition-all group"
+            >
+              <Plus className="h-10 w-10 text-gray-300 group-hover:text-[#006837] transition-colors" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2 font-heading">No categories found</h3>
+            <p className="text-gray-500 mb-8 max-w-xs mx-auto font-medium text-sm">Create your first category to start organizing your premium product collections.</p>
+            <button onClick={handleAdd} className="rounded-full px-8 py-3 bg-[#006837] hover:bg-black text-white font-bold text-sm transition-all active:scale-95 shadow-md">
+              Create First Category
+            </button>
+          </div>
         ) : (
-          filteredCategories.map((cat: any, i: number) => (
-
-            <div key={cat.id} className="relative bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden group hover:shadow-xl hover:shadow-black/5 transition-all duration-500">
-              <Link 
-                href={`/admin/products?category=${cat.slug}`}
-                className="block"
-              >
-                <div className="relative h-48 bg-transparent flex items-center justify-center p-8 overflow-hidden">
-                  <div className="absolute inset-0 bg-transparent transition-colors duration-500 z-10" />
-                  {(cat.image_url && (cat.image_url.startsWith('http') || cat.image_url.startsWith('/') || cat.image_url.startsWith('data:'))) ? (
-                    <Image 
-                      src={cat.image_url} 
-                      alt={cat.name} 
-                      fill 
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                      className="object-contain p-6 transition-transform duration-700 group-hover:scale-110"
-                      loading={i < 2 ? "eager" : "lazy"}
-                      priority={i === 0}
-                    />
-
-                  ) : (
-                    <Layers className="w-12 h-12 text-gray-200" />
-                  )}
-                </div>
-                <div className="p-8 pt-2 space-y-4 flex justify-between items-start group/card">
-                  <div>
-                    <h3 className="text-xl font-black text-gray-900 font-heading group-hover/card:text-[#006837] transition-colors">{cat.name}</h3>
-                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">{cat.products_count || 0} Products</p>
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover/card:text-black transition-colors hover:bg-gray-100">
-                    <ArrowUpRight size={18} />
-                  </div>
-                </div>
-              </Link>
-              
-              {/* Actions Overlay - Always visible on mobile, hover effect on desktop */}
-              <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-20">
-                <button 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleEdit(cat);
-                  }}
-                  className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-gray-400 hover:text-[#006837] transition-colors"
+          <>
+            {filteredCategories.map((cat: any, i: number) => (
+              <div key={cat.id} className="relative bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden group hover:shadow-xl hover:shadow-black/5 transition-all duration-500">
+                <Link 
+                  href={`/admin/products?category=${cat.slug}`}
+                  className="block"
                 >
-                  <Edit3 size={14} />
-                </button>
-                <button 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleDelete(cat);
-                  }}
-                  className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
-                >
-                  <Trash2 size={14} />
-                </button>
+                  <div className="relative h-48 bg-transparent flex items-center justify-center p-8 overflow-hidden">
+                    <div className="absolute inset-0 bg-transparent transition-colors duration-500 z-10" />
+                    {(cat.image_url && (cat.image_url.startsWith('http') || cat.image_url.startsWith('/') || cat.image_url.startsWith('data:'))) ? (
+                      <Image 
+                        src={cat.image_url} 
+                        alt={cat.name} 
+                        fill 
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                        className="object-contain p-6 transition-transform duration-700 group-hover:scale-110"
+                        loading={i < 2 ? "eager" : "lazy"}
+                        priority={i === 0}
+                      />
+                    ) : (
+                      <Layers className="w-12 h-12 text-gray-200" />
+                    )}
+                  </div>
+                  <div className="p-8 pt-2 space-y-4 flex justify-between items-start group/card">
+                    <div>
+                      <h3 className="text-xl font-black text-gray-900 font-heading group-hover/card:text-[#006837] transition-colors">{cat.name}</h3>
+                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">{cat.products_count || 0} Products</p>
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover/card:text-black transition-colors hover:bg-gray-100">
+                      <ArrowUpRight size={18} />
+                    </div>
+                  </div>
+                </Link>
+                
+                {/* Actions Overlay */}
+                <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-20">
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleEdit(cat);
+                    }}
+                    className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-gray-400 hover:text-[#006837] transition-colors"
+                  >
+                    <Edit3 size={14} />
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleDelete(cat);
+                    }}
+                    className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))
-        )}
-        
-        {/* Add New Category Card Placeholder - Only show when not loading */}
-        {!loading && (
-          <button 
-            onClick={handleAdd}
-            className="bg-white rounded-[2rem] border-2 border-dashed border-gray-100 p-8 flex flex-col items-center justify-center space-y-4 text-gray-400 hover:border-[#006837] hover:text-[#006837] transition-all group min-h-[320px]"
-          >
-            <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-[#006837]/10 transition-colors">
-              <Plus size={32} />
-            </div>
-            <span className="font-bold text-sm tracking-wide uppercase">Add Category</span>
-          </button>
+            ))}
+            
+            {/* Add New Category Card Placeholder - Only show alongside existing list */}
+            <button 
+              onClick={handleAdd}
+              className="bg-white rounded-[2rem] border-2 border-dashed border-gray-100 p-8 flex flex-col items-center justify-center space-y-4 text-gray-400 hover:border-[#006837] hover:text-[#006837] transition-all group min-h-[320px]"
+            >
+              <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-[#006837]/10 transition-colors">
+                <Plus size={32} />
+              </div>
+              <span className="font-bold text-sm tracking-wide uppercase">Add Category</span>
+            </button>
+          </>
         )}
       </div>
 

@@ -90,15 +90,43 @@ export default function HeroSlidesPage() {
 
       <div className="grid grid-cols-1 gap-6">
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[1, 2].map((i) => (
-              <div key={i} className="bg-white rounded-3xl p-6 h-64 animate-pulse border border-gray-100" />
+              <div 
+                key={i} 
+                className="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 flex flex-col animate-pulse shadow-sm"
+              >
+                {/* Image Placeholder */}
+                <div className="relative h-48 w-full bg-gray-100/70 flex items-center justify-center">
+                  <div className="absolute top-4 right-4 w-24 h-7 bg-gray-200/80 rounded-full" />
+                </div>
+                {/* Content Placeholder */}
+                <div className="p-8 flex flex-col flex-1 space-y-4">
+                  {/* Title Bar */}
+                  <div className="h-7 w-2/3 bg-gray-200 rounded-xl" />
+                  {/* Subtitle/Text lines */}
+                  <div className="space-y-2 flex-1 pb-4">
+                    <div className="h-4 w-full bg-gray-100 rounded-lg" />
+                    <div className="h-4 w-4/5 bg-gray-100 rounded-lg" />
+                  </div>
+                  {/* Footer Action buttons */}
+                  <div className="flex items-center justify-between pt-6 border-t border-gray-100/60 mt-auto">
+                    <div className="flex items-center gap-2">
+                      <div className="w-11 h-11 rounded-2xl bg-gray-100/80" />
+                      <div className="w-11 h-11 rounded-2xl bg-gray-100/80" />
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         ) : slides.length === 0 ? (
           <div className="bg-white rounded-[2.5rem] p-20 text-center border-2 border-dashed border-gray-100">
-            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Plus className="h-10 w-10 text-gray-300" />
+            <div 
+              onClick={handleAdd}
+              className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 cursor-pointer hover:bg-[#006837]/10 hover:text-[#006837] active:scale-95 transition-all group"
+            >
+              <Plus className="h-10 w-10 text-gray-300 group-hover:text-[#006837] transition-colors" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">No slides found</h3>
             <p className="text-gray-500 mb-8 max-w-xs mx-auto font-medium">Create your first hero slide to start showcasing your products.</p>

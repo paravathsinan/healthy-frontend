@@ -260,18 +260,18 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative bg-white w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+          <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative bg-white w-full max-w-2xl rounded-[1.75rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[95vh] sm:max-h-[90vh]">
             {/* Header */}
-            <div className="py-4 px-8 border-b border-gray-100 flex justify-between items-center bg-gray-100/60 shrink-0">
-              <div className="flex items-center gap-5">
+            <div className="py-3 sm:py-4 px-4 sm:px-8 border-b border-gray-100 flex justify-between items-center bg-gray-100/60 shrink-0">
+              <div className="flex items-center gap-3 sm:gap-5">
                 {product && (
-                  <div className="w-16 h-16 rounded-2xl bg-white border border-gray-200 overflow-hidden flex-shrink-0 shadow-sm p-1.5 bg-white/80">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-white border border-gray-200 overflow-hidden flex-shrink-0 shadow-sm p-1 sm:p-1.5 bg-white/80">
                     <img src={product.primary_image || 'https://via.placeholder.com/64'} className="w-full h-full object-contain" alt={product.name} />
                   </div>
                 )}
                 <div>
-                  <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-black text-gray-900 font-heading">{product ? product.name : "New Product"}</h2>
+                  <div className="flex items-center gap-2.5 sm:gap-3">
+                    <h2 className="text-lg sm:text-2xl font-black text-gray-900 font-heading truncate max-w-[160px] sm:max-w-xs">{product ? product.name : "New Product"}</h2>
                     {product && (
                       <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${productStatuses.find(s => s.id === currentStatus)?.bg} ${productStatuses.find(s => s.id === currentStatus)?.color} ${productStatuses.find(s => s.id === currentStatus)?.border}`}>
                         {productStatuses.find(s => s.id === currentStatus)?.label}
@@ -288,9 +288,9 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-8 space-y-10">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 sm:space-y-10">
               {/* Status Strip */}
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div className="flex items-center gap-3 text-gray-400">
                   <CheckCircle2 size={16} />
                   <span className="text-[10px] font-bold uppercase tracking-widest">Update Product Status</span>
@@ -312,11 +312,11 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-10">
+              <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-10">
                 {/* General Information */}
-                <div className="space-y-6 pt-4 border-t border-gray-50">
+                <div className="space-y-4 sm:space-y-6 pt-4 sm:pt-6 border-t border-gray-50">
                   <div className="flex items-center gap-3 text-gray-400"><Package size={16} /><span className="text-[10px] font-bold uppercase tracking-widest">General Information</span></div>
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="name" className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Product Name</Label>
                       <input 
@@ -339,7 +339,7 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
                 </div>
 
                 {/* Pricing & Visibility */}
-                <div className="space-y-6 pt-6 border-t border-gray-50">
+                <div className="space-y-4 sm:space-y-6 pt-4 sm:pt-6 border-t border-gray-50">
                   <div className="flex items-center gap-3 text-gray-400"><Tag size={16} /><span className="text-[10px] font-bold uppercase tracking-widest">Pricing & Visibility</span></div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
@@ -405,7 +405,7 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
                 </div>
 
                 {/* Badges & Tags */}
-                <div className="space-y-6 pt-6 border-t border-gray-50">
+                <div className="space-y-4 sm:space-y-6 pt-4 sm:pt-6 border-t border-gray-50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 text-gray-400">
                       <CheckCircle2 size={16} />
@@ -455,10 +455,10 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
                     )}
                   </div>
 
-                  <div className="space-y-8 bg-gray-50/50 p-8 rounded-[2.5rem] border border-gray-100">
+                  <div className="space-y-6 sm:space-y-8 bg-gray-50/50 p-4 sm:p-8 rounded-[1.75rem] sm:rounded-[2.5rem] border border-gray-100">
                     {badgeCategories.map((category) => (
-                      <div key={category.name} className="space-y-4">
-                        <div className="flex items-center gap-2 text-gray-400 mb-2"><category.icon size={12} /><span className="text-[9px] font-black uppercase tracking-widest">{category.name}</span></div>
+                      <div key={category.name} className="space-y-3 sm:space-y-4">
+                        <div className="flex items-center gap-2 text-gray-400 mb-1 sm:mb-2"><category.icon size={12} /><span className="text-[9px] font-black uppercase tracking-widest">{category.name}</span></div>
                         <div className="flex flex-wrap gap-2">
                           {category.badges.map((badge) => {
                             const isSelected = formData.tags.includes(badge.label);
@@ -494,7 +494,7 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
                 </div>
 
                 {/* Media */}
-                <div className="space-y-6 pt-6 border-t border-gray-50">
+                <div className="space-y-4 sm:space-y-6 pt-4 sm:pt-6 border-t border-gray-50">
                   <div className="flex items-center gap-3 text-gray-400"><ImageIcon size={16} /><span className="text-[10px] font-bold uppercase tracking-widest">Product Media</span></div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     {/* Primary Image */}
@@ -565,7 +565,7 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
                 </div>
 
                 {/* Description */}
-                <div className="space-y-6 pt-6 border-t border-gray-50 pb-8">
+                <div className="space-y-4 sm:space-y-6 pt-4 sm:pt-6 border-t border-gray-50 pb-4 sm:pb-8">
                   <div className="flex items-center gap-3 text-gray-400"><FileText size={16} /><span className="text-[10px] font-bold uppercase tracking-widest">Description</span></div>
                   <textarea 
                     readOnly={!isEditing} 
@@ -579,7 +579,7 @@ export function ProductModal({ isOpen, onClose, product, onSuccess, categories, 
             </div>
 
             {/* Footer */}
-            <div className="py-4 px-6 md:px-8 bg-gray-100/80 border-t border-gray-100 flex flex-row justify-between items-center gap-4 shrink-0">
+            <div className="py-3 sm:py-4 px-4 sm:px-8 bg-gray-100/80 border-t border-gray-100 flex flex-row justify-between items-center gap-3 sm:gap-4 shrink-0">
               <div className="flex items-center gap-4 flex-1 min-w-0">
                 {!isEditing && (
                   <div className="truncate">

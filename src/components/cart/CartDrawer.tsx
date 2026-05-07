@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/sheet";
 import { Drawer } from "vaul";
 import { Minus, Plus, Trash2, ShoppingBag, X } from "lucide-react";
-import { sendWhatsAppCartOrder } from "@/lib/whatsapp";
+import { sendWhatsAppCartOrder, buildWhatsAppUrl } from "@/lib/whatsapp";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -160,11 +160,62 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
                 loading={isOrdering} 
                 className="w-full bg-[#1A1A1A] hover:bg-black text-white py-4 rounded-2xl font-bold h-auto text-[16px]"
                 onClick={async () => {
-                  if (!customerDetails.name || !customerDetails.address || !customerDetails.phone) {
-                    alert("Please fill in your details.");
+                  const nameTrimmed = (customerDetails.name || "").trim();
+                  const phoneTrimmed = (customerDetails.phone || "").trim();
+                  const addressTrimmed = (customerDetails.address || "").trim();
+
+                  // 1. Name Validation
+                  if (!nameTrimmed) {
+                    toast.error("Please enter your Full Name.", {
+                      duration: 4000,
+                      className: "rounded-2xl font-bold border-red-100 bg-red-50 text-red-600"
+                    });
                     return;
                   }
+                  if (nameTrimmed.length < 3) {
+                    toast.error("Name should be at least 3 characters long.", {
+                      duration: 4000,
+                      className: "rounded-2xl font-bold border-red-100 bg-red-50 text-red-600"
+                    });
+                    return;
+                  }
+
+                  // 2. WhatsApp Number Validation
+                  const cleanPhone = phoneTrimmed.replace(/\s+/g, '');
+                  const phoneRegex = /^[+]?[0-9]{10,14}$/;
+                  if (!phoneTrimmed) {
+                    toast.error("Please enter your WhatsApp Number.", {
+                      duration: 4000,
+                      className: "rounded-2xl font-bold border-red-100 bg-red-50 text-red-600"
+                    });
+                    return;
+                  }
+                  if (!phoneRegex.test(cleanPhone)) {
+                    toast.error("Please enter a valid WhatsApp number (10-12 digits).", {
+                      duration: 4000,
+                      className: "rounded-2xl font-bold border-red-100 bg-red-50 text-red-600"
+                    });
+                    return;
+                  }
+
+                  // 3. Location / Address Validation
+                  if (!addressTrimmed) {
+                    toast.error("Please enter your Delivery Location.", {
+                      duration: 4000,
+                      className: "rounded-2xl font-bold border-red-100 bg-red-50 text-red-600"
+                    });
+                    return;
+                  }
+                  if (addressTrimmed.length < 8) {
+                    toast.error("Please enter a more detailed delivery location (at least 8 characters).", {
+                      duration: 4000,
+                      className: "rounded-2xl font-bold border-red-100 bg-red-50 text-red-600"
+                    });
+                    return;
+                  }
+
                   setIsOrdering(true);
+
                   try {
                     const response = await createOrder({
                       customer_name: customerDetails.name,
@@ -172,15 +223,26 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
                       customer_address: customerDetails.address,
                       total_amount: parseFloat(total.toFixed(2)),
                       items: items.map(item => ({
-                        product: item.productId,
-                        variant: item.variantId,
+                        product: item.productId || null,
+                        variant: item.variantId || null,
                         product_name: item.name,
                         variant_name: item.weight,
                         quantity: item.quantity,
                         price: item.price
                       }))
                     });
-                    sendWhatsAppCartOrder(items, total, customerDetails, response.order_number);
+
+                    // Open WhatsApp in a new tab using a hidden anchor click.
+                    // This avoids popup-blocker issues while skipping the blank-tab flash.
+                    const waUrl = buildWhatsAppUrl(items, total, customerDetails, response.order_number);
+                    const link = document.createElement('a');
+                    link.href = waUrl;
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
                     clearCart();
                   } catch (e: any) { 
                     console.error("Checkout Error:", e);
@@ -188,17 +250,37 @@ function CartDrawerContent({ isSheet = false, activeSnap = 1, setActiveSnap = (v
                     let errorMessage = "Failed to place order. Please try again.";
                     
                     if (errorData) {
-                      if (typeof errorData === 'object') {
-                        errorMessage = Object.values(errorData).flat().join(", ");
-                      } else {
-                        errorMessage = String(errorData);
-                      }
+                      const parseBackendError = (err: any): string => {
+                        if (!err) return "";
+                        if (typeof err === 'string') return err;
+                        if (Array.isArray(err)) {
+                          return err.map(item => parseBackendError(item)).filter(Boolean).join(", ");
+                        }
+                        if (typeof err === 'object') {
+                          return Object.entries(err)
+                            .map(([key, val]) => {
+                              const formattedVal = parseBackendError(val);
+                              if (!formattedVal) return "";
+                              if (key === 'non_field_errors') return formattedVal;
+                              // If key is a number, it's an array index; just return the nested formatted error
+                              if (!isNaN(Number(key))) return formattedVal;
+                              const label = key.replace(/_/g, ' ');
+                              const capitalizedLabel = label.charAt(0).toUpperCase() + label.slice(1);
+                              return `${capitalizedLabel}: ${formattedVal}`;
+                            })
+                            .filter(Boolean)
+                            .join(" | ");
+                        }
+                        return String(err);
+                      };
+
+                      errorMessage = parseBackendError(errorData);
                     } else if (e.message) {
                       errorMessage = e.message;
                     }
                     
                     toast.error(errorMessage, {
-                      duration: 5000,
+                      duration: 6000,
                       className: "rounded-2xl font-bold border-red-100 bg-red-50 text-red-600"
                     });
                   }
