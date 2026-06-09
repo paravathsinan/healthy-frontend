@@ -3,7 +3,9 @@ import axios from 'axios';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 const API_BASE_URL = `${API_URL}/api/v1`;
 
-console.log(`🚀 API Base URL: ${API_BASE_URL}`);
+if (process.env.NODE_ENV === 'development') {
+  console.log(`🚀 API Base URL: ${API_BASE_URL}`);
+}
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -32,7 +34,9 @@ api.interceptors.response.use(
   (response) => {
     // @ts-ignore
     const duration = new Date().getTime() - response.config.metadata.startTime.getTime();
-    console.log(`✅ API Success: [${response.config.method?.toUpperCase()}] ${response.config.url} - ${duration}ms`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ API Success: [${response.config.method?.toUpperCase()}] ${response.config.url} - ${duration}ms`);
+    }
     return response;
   },
   async (error) => {
