@@ -26,6 +26,7 @@ export default function AdminDashboard() {
   const [visitorsMeta, setVisitorsMeta] = useState<{ count: number; total_pages: number; page: number } | null>(null);
   const [visitorsPage, setVisitorsPage] = useState(1);
   const [clearingVisitors, setClearingVisitors] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -90,14 +91,26 @@ export default function AdminDashboard() {
     }
   };
 
+  const IST = "Asia/Kolkata";
+
   const formatDate = (iso: string) => {
     const d = new Date(iso);
-    return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    return d.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      timeZone: IST,
+    });
   };
 
   const formatTime = (iso: string) => {
     const d = new Date(iso);
-    return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: IST,
+    });
   };
 
   /** Converts total seconds into a human-readable string e.g. "2h 14m" or "45s" */
@@ -111,8 +124,43 @@ export default function AdminDashboard() {
     return `${s}s`;
   };
 
-  const handleClearVisitors = async () => {
-    if (!window.confirm("Clear ALL visitor records? This cannot be undone.")) return;
+  /** Prefer tracked time; fall back to first→last span for legacy rows */
+  const countryFlag = (code: string) => {
+    if (!code || code.length !== 2 || code === "LO") return "🌍";
+    const upper = code.toUpperCase();
+    return String.fromCodePoint(
+      ...[...upper].map((char) => 0x1f1e6 - 65 + char.charCodeAt(0))
+    );
+  };
+
+  const formatCountry = (visitor: { country_code?: string; country_name?: string }) => {
+    const name = visitor.country_name || "Unknown";
+    const code = visitor.country_code || "";
+    return { label: name, flag: countryFlag(code) };
+  };
+
+  const getVisitorDuration = (visitor: {
+    total_time_seconds: number;
+    first_seen: string;
+    last_seen: string;
+  }) => {
+    if (visitor.total_time_seconds > 0) {
+      return { label: formatDuration(visitor.total_time_seconds), estimated: false };
+    }
+    const span = Math.floor(
+      (new Date(visitor.last_seen).getTime() - new Date(visitor.first_seen).getTime()) / 1000
+    );
+    if (span > 0) {
+      return { label: `~${formatDuration(span)}`, estimated: true };
+    }
+    return { label: "< 1s", estimated: false };
+  };
+
+  const handleClearVisitors = () => {
+    setShowClearConfirm(true);
+  };
+
+  const confirmClearVisitors = async () => {
     setClearingVisitors(true);
     try {
       await api.delete('/clear-visitors/');
@@ -120,6 +168,7 @@ export default function AdminDashboard() {
       setVisitorsMeta(null);
       setStatsData((prev: any) => prev ? { ...prev, total_visitors: 0 } : prev);
       toast.success("All visitor records cleared");
+      setShowClearConfirm(false);
     } catch {
       toast.error("Failed to clear visitors");
     } finally {
@@ -212,9 +261,6 @@ export default function AdminDashboard() {
             {/* Table Header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-purple-50 text-purple-500">
-                  <Globe className="h-4 w-4" />
-                </div>
                 <div>
                   <h2 className="text-[14px] font-black text-gray-900 tracking-tight">Unique Visitors</h2>
                   <p className="text-[11px] text-gray-400 font-medium">
@@ -233,9 +279,6 @@ export default function AdminDashboard() {
                     : <Trash2 className="h-3 w-3" />}
                   Clear All
                 </button>
-                <span className="text-[10px] font-black uppercase tracking-widest text-purple-400 bg-purple-50 px-3 py-1 rounded-full">
-                  Newest First
-                </span>
               </div>
             </div>
 
@@ -253,24 +296,30 @@ export default function AdminDashboard() {
                 <p className="text-xs text-gray-400">Share your store link to get your first visitor.</p>
               </div>
             ) : (
-              <>
-                {/* Column headers — desktop */}
-                <div className="hidden md:grid grid-cols-[2rem_1fr_1fr_1fr_1fr] gap-4 px-6 py-3 bg-gray-50/50 border-b border-gray-50">
+              <div className="overflow-x-auto w-full">
+                <div className="min-w-[800px]">
+                  {/* Column headers */}
+                  <div className="grid grid-cols-[2rem_1fr_0.8fr_1fr_1fr_1fr] gap-4 px-6 py-3 bg-gray-50/50 border-b border-gray-50">
                   <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">#</span>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Visitor ID</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Unique Visitor ID</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Country</span>
                   <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">First Seen</span>
                   <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Last Seen</span>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Time Spent</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Time Spent</span>
                 </div>
 
                 {/* Rows */}
-                {visitors.map((v, idx) => (
+                {visitors.map((v, idx) => {
+                  const country = formatCountry(v);
+                  const duration = getVisitorDuration(v);
+                  return (
                   <div
                     key={v.visitor_id}
                     className="border-b border-gray-50/70 last:border-0 hover:bg-gray-50/40 transition-colors group"
                   >
-                    {/* ── Desktop row (grid) ── */}
-                    <div className="hidden md:grid md:grid-cols-[2rem_1fr_1fr_1fr_1fr] gap-4 px-6 py-4">
+                    {/* ── Row (grid) ── */}
+                    <div className="grid grid-cols-[2rem_1fr_0.8fr_1fr_1fr_1fr] gap-4 px-6 py-4">
+                      {/* Number */}
                       <div className="flex items-center">
                         <span className="text-[11px] font-bold text-gray-300">
                           {(visitorsPage - 1) * 20 + idx + 1}
@@ -278,69 +327,39 @@ export default function AdminDashboard() {
                       </div>
                       {/* Visitor ID */}
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
-                          <Users className="h-3.5 w-3.5 text-purple-500" />
-                        </div>
                         <p className="text-[12px] font-black text-gray-900 font-mono">{v.id}</p>
+                      </div>
+                      {/* Country */}
+                      <div className="flex items-center gap-2">
+                        <p className="text-[12px] font-bold text-gray-700">{country.label}</p>
                       </div>
                       {/* First Seen */}
                       <div className="flex flex-col justify-center">
                         <p className="text-[12px] font-bold text-gray-700">{formatDate(v.first_seen)}</p>
-                        <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
-                          <Clock className="h-3 w-3" /> {formatTime(v.first_seen)}
+                        <p className="text-[10px] text-gray-400 mt-0.5">
+                          {formatTime(v.first_seen)} IST
                         </p>
                       </div>
                       {/* Last Seen */}
                       <div className="flex flex-col justify-center">
                         <p className="text-[12px] font-bold text-gray-700">{formatDate(v.last_seen)}</p>
-                        <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
-                          <Clock className="h-3 w-3" /> {formatTime(v.last_seen)}
+                        <p className="text-[10px] text-gray-400 mt-0.5">
+                          {formatTime(v.last_seen)} IST
                         </p>
                       </div>
                       {/* Time Spent */}
-                      <div className="flex flex-col justify-center">
-                        <p className="text-[12px] font-bold text-[#006837] flex items-center gap-1">
-                          <Timer className="h-3.5 w-3.5" />
-                          {formatDuration(v.total_time_seconds)}
+                      <div className="flex flex-col justify-center items-end">
+                        <p className="text-[12px] font-bold text-[#006837]">
+                          {duration.label}
                         </p>
-                        <p className="text-[10px] text-gray-400 mt-0.5">total on-site</p>
-                      </div>
-                    </div>
-
-                    {/* ── Mobile card ── */}
-                    <div className="flex md:hidden items-start gap-3 px-4 py-4">
-                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0 mt-0.5">
-                        <Users className="h-3.5 w-3.5 text-purple-500" />
-                      </div>
-                      <div className="flex-1 min-w-0 space-y-2">
-                        {/* ID + row number */}
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-[11px] font-black text-gray-900 font-mono truncate">{v.id}</p>
-                          <span className="text-[10px] font-bold text-gray-300 shrink-0">#{(visitorsPage - 1) * 20 + idx + 1}</span>
-                        </div>
-                        {/* Dates row */}
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-0.5">First Seen</p>
-                            <p className="text-[11px] font-bold text-gray-700">{formatDate(v.first_seen)}</p>
-                            <p className="text-[10px] text-gray-400">{formatTime(v.first_seen)}</p>
-                          </div>
-                          <div>
-                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Last Seen</p>
-                            <p className="text-[11px] font-bold text-gray-700">{formatDate(v.last_seen)}</p>
-                            <p className="text-[10px] text-gray-400">{formatTime(v.last_seen)}</p>
-                          </div>
-                        </div>
-                        {/* Time Spent */}
-                        <div className="flex items-center gap-1.5">
-                          <Timer className="h-3 w-3 text-[#006837]" />
-                          <span className="text-[11px] font-bold text-[#006837]">{formatDuration(v.total_time_seconds)}</span>
-                          <span className="text-[10px] text-gray-400">total on-site</span>
-                        </div>
+                        <p className="text-[10px] mt-0.5 opacity-0 select-none" aria-hidden="true">
+                          placeholder
+                        </p>
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
 
                 {/* Pagination */}
                 {visitorsMeta && visitorsMeta.total_pages > 1 && (
@@ -364,11 +383,46 @@ export default function AdminDashboard() {
                     </button>
                   </div>
                 )}
-              </>
+              </div>
+              </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Clear All Confirmation Modal */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-[2rem] p-6 md:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center gap-4 mb-4 text-red-500">
+              <div className="p-3 bg-red-50 rounded-xl">
+                <Trash2 className="h-6 w-6" />
+              </div>
+              <h3 className="text-xl font-black text-gray-900 tracking-tight">Clear All Visitors?</h3>
+            </div>
+            <p className="text-gray-500 text-sm mb-6 leading-relaxed font-medium">
+              Are you absolutely sure you want to delete all visitor records? This action <strong className="text-red-500">cannot be undone</strong> and all historical data will be permanently lost.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                disabled={clearingVisitors}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmClearVisitors}
+                disabled={clearingVisitors}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-red-500 hover:bg-red-600 transition-colors disabled:opacity-50 shadow-md shadow-red-500/20"
+              >
+                {clearingVisitors ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                Yes, Delete All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
